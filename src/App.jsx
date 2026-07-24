@@ -1,49 +1,4 @@
-import { useState } from "react";
-
-const SAMPLE_NEWS = [
-  {
-    id: 1,
-    headline: "Alnylam Pharmaceuticals Receives $500M in New Funding to Expand siRNA Pipeline",
-    source: "FierceBiotech",
-    date: "2026-02-14",
-    snippet: "Alnylam Pharmaceuticals announced a $500M funding round to accelerate development of its siRNA therapeutics pipeline, including new candidates targeting liver and CNS diseases."
-  },
-  {
-    id: 2,
-    headline: "BioNTech Opens New mRNA Manufacturing Facility in Marburg",
-    source: "BioPharma Dive",
-    date: "2026-02-13",
-    snippet: "BioNTech has opened a state-of-the-art mRNA manufacturing facility in Marburg, Germany, capable of producing up to 1 billion vaccine doses annually with expanded quality control operations."
-  },
-  {
-    id: 3,
-    headline: "Amgen's Biosimilar Portfolio Gains Three New FDA Approvals",
-    source: "Endpoints News",
-    date: "2026-02-12",
-    snippet: "Amgen announced FDA approval for three new biosimilar products targeting oncology and autoimmune indications, expanding their manufacturing and quality testing operations."
-  },
-  {
-    id: 4,
-    headline: "Novo Nordisk Invests $2.3B in GLP-1 Production Expansion",
-    source: "Reuters",
-    date: "2026-02-11",
-    snippet: "Novo Nordisk is investing $2.3 billion to expand semaglutide production capacity at its facilities in Denmark and North Carolina to meet surging demand for obesity and diabetes treatments."
-  },
-  {
-    id: 5,
-    headline: "Intellia Therapeutics Reports Positive Phase 2 CRISPR Data",
-    source: "STAT News",
-    date: "2026-02-10",
-    snippet: "Intellia Therapeutics announced positive interim Phase 2 data for its in-vivo CRISPR gene editing therapy NTLA-2001 for transthyretin amyloidosis, with plans to advance to Phase 3."
-  },
-  {
-    id: 6,
-    headline: "Samsung Biologics Signs $1.2B CDO Deal for ADC Manufacturing",
-    source: "Contract Pharma",
-    date: "2026-02-09",
-    snippet: "Samsung Biologics has signed a $1.2 billion contract development and manufacturing deal to produce antibody-drug conjugates for an undisclosed US biotech partner."
-  }
-];
+import { useState, useEffect, useCallback } from "react";
 
 function LoadingDots() {
   return (
@@ -319,6 +274,34 @@ export default function App() {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("feed");
   const [analyzeAll, setAnalyzeAll] = useState(false);
+  const [newsItems, setNewsItems] = useState([]);
+  const [newsLoading, setNewsLoading] = useState(true);
+  const [newsError, setNewsError] = useState(null);
+  const [feedErrors, setFeedErrors] = useState([]);
+
+  const fetchNews = useCallback(async (force = false) => {
+    setNewsLoading(true);
+    setNewsError(null);
+    try {
+      const response = await fetch(`/api/news${force ? "?refresh=true" : ""}`);
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        throw new Error(body.error || `Request failed with status ${response.status}`);
+      }
+      const data = await response.json();
+      setNewsItems(data.items || []);
+      setFeedErrors(data.errors || []);
+    } catch (err) {
+      console.error(err);
+      setNewsError(err.message || "Couldn't load live news.");
+    } finally {
+      setNewsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchNews();
+  }, [fetchNews]);
 
   const analyzeNewsItem = async (item) => {
     setLoadingId(item.id);
@@ -353,7 +336,7 @@ export default function App() {
 
   const handleAnalyzeAll = async () => {
     setAnalyzeAll(true);
-    for (const item of SAMPLE_NEWS) {
+    for (const item of newsItems) {
       if (!analyses[item.id]) {
         await analyzeNewsItem(item);
         await new Promise(r => setTimeout(r, 500));
@@ -367,7 +350,7 @@ export default function App() {
     await analyzeNewsItem(item);
   };
 
-  const allNews = [...customNews, ...SAMPLE_NEWS];
+  const allNews = [...customNews, ...newsItems];
   const analyzedCount = Object.keys(analyses).length;
   const highOppCount = Object.values(analyses).filter(a => a.opportunity_score >= 7).length;
 
@@ -439,18 +422,30 @@ export default function App() {
             }}>{tab.label}</button>
           ))}
           {activeTab === "feed" && (
-            <button onClick={handleAnalyzeAll} disabled={analyzeAll || analyzedCount === SAMPLE_NEWS.length}
-              style={{
-                marginLeft: "auto",
-                background: analyzeAll ? "#1e293b" : "transparent",
-                color: analyzeAll ? "#475569" : "#e8927c",
-                fontWeight: 600, fontSize: 13, padding: "8px 20px",
-                borderRadius: 8, border: "1px solid #e8927c33",
-                cursor: analyzeAll ? "not-allowed" : "pointer",
-                fontFamily: "'Space Grotesk', sans-serif"
-              }}>
-              {analyzeAll ? "Analyzing..." : "Analyze All"}
-            </button>
+            <div style={{ marginLeft: "auto", display: "flex", gap: 10 }}>
+              <button onClick={() => fetchNews(true)} disabled={newsLoading}
+                style={{
+                  background: "transparent",
+                  color: newsLoading ? "#475569" : "#94a3b8",
+                  fontWeight: 600, fontSize: 13, padding: "8px 20px",
+                  borderRadius: 8, border: "1px solid #33415533",
+                  cursor: newsLoading ? "not-allowed" : "pointer",
+                  fontFamily: "'Space Grotesk', sans-serif"
+                }}>
+                {newsLoading ? "Refreshing..." : "Refresh Feed"}
+              </button>
+              <button onClick={handleAnalyzeAll} disabled={analyzeAll || newsItems.length === 0 || analyzedCount === newsItems.length}
+                style={{
+                  background: analyzeAll ? "#1e293b" : "transparent",
+                  color: analyzeAll ? "#475569" : "#e8927c",
+                  fontWeight: 600, fontSize: 13, padding: "8px 20px",
+                  borderRadius: 8, border: "1px solid #e8927c33",
+                  cursor: analyzeAll ? "not-allowed" : "pointer",
+                  fontFamily: "'Space Grotesk', sans-serif"
+                }}>
+                {analyzeAll ? "Analyzing..." : "Analyze All"}
+              </button>
+            </div>
           )}
         </div>
 
@@ -462,14 +457,63 @@ export default function App() {
           }}>{error}</div>
         )}
 
+        {activeTab === "feed" && newsError && (
+          <div style={{
+            background: "#dc262622", border: "1px solid #dc262644",
+            borderRadius: 10, padding: "12px 16px", marginBottom: 16,
+            color: "#fca5a5", fontSize: 13, fontFamily: "'IBM Plex Sans', sans-serif",
+            display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12
+          }}>
+            <span>{newsError}</span>
+            <button onClick={() => fetchNews(true)} style={{
+              background: "transparent", color: "#fca5a5", border: "1px solid #fca5a566",
+              borderRadius: 8, padding: "6px 14px", cursor: "pointer", fontSize: 12,
+              fontFamily: "'Space Grotesk', sans-serif", flexShrink: 0
+            }}>Retry</button>
+          </div>
+        )}
+
+        {activeTab === "feed" && !newsError && feedErrors.length > 0 && newsItems.length > 0 && (
+          <div style={{
+            background: "#78350f22", border: "1px solid #d9770644",
+            borderRadius: 10, padding: "10px 16px", marginBottom: 16,
+            color: "#fcd34d", fontSize: 12, fontFamily: "'DM Mono', monospace"
+          }}>
+            {feedErrors.length} source{feedErrors.length > 1 ? "s" : ""} unavailable right now ({feedErrors.map(e => e.source).join(", ")}) — showing headlines from the rest.
+          </div>
+        )}
+
+        {activeTab === "feed" && !newsError && feedErrors.length > 0 && newsItems.length === 0 && !newsLoading && (
+          <div style={{
+            background: "#dc262622", border: "1px solid #dc262644",
+            borderRadius: 10, padding: "12px 16px", marginBottom: 16,
+            color: "#fca5a5", fontSize: 13, fontFamily: "'IBM Plex Sans', sans-serif",
+            display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12
+          }}>
+            <span>All news sources are unavailable right now ({feedErrors.map(e => e.source).join(", ")}).</span>
+            <button onClick={() => fetchNews(true)} style={{
+              background: "transparent", color: "#fca5a5", border: "1px solid #fca5a566",
+              borderRadius: 8, padding: "6px 14px", cursor: "pointer", fontSize: 12,
+              fontFamily: "'Space Grotesk', sans-serif", flexShrink: 0
+            }}>Retry</button>
+          </div>
+        )}
+
         {activeTab === "custom" && (
           <div style={{ marginBottom: 24 }}>
             <CustomNewsInput onAnalyze={handleCustomAnalyze} loading={loadingId !== null} />
           </div>
         )}
 
+        {activeTab === "feed" && newsLoading && newsItems.length === 0 && !newsError && (
+          <div style={{ textAlign: "center", padding: "60px 20px", color: "#64748b" }}>
+            <LoadingDots />
+            <p style={{ fontSize: 14, fontFamily: "'DM Mono', monospace", marginTop: 8 }}>Loading live biopharma news…</p>
+          </div>
+        )}
+
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          {(activeTab === "feed" ? SAMPLE_NEWS : customNews).map(item => (
+          {(activeTab === "feed" ? newsItems : customNews).map(item => (
             <NewsCard
               key={item.id}
               item={item}
@@ -484,6 +528,14 @@ export default function App() {
             }}>
               <p style={{ fontSize: 15, fontFamily: "'Space Grotesk', sans-serif" }}>Paste a headline or article above to get started</p>
               <p style={{ fontSize: 13, fontFamily: "'DM Mono', monospace", marginTop: 8 }}>The AI will analyze the science and match Phenomenex products</p>
+            </div>
+          )}
+          {activeTab === "feed" && !newsLoading && !newsError && newsItems.length === 0 && feedErrors.length === 0 && (
+            <div style={{
+              textAlign: "center", padding: "60px 20px", color: "#475569"
+            }}>
+              <p style={{ fontSize: 15, fontFamily: "'Space Grotesk', sans-serif" }}>No live headlines available right now</p>
+              <p style={{ fontSize: 13, fontFamily: "'DM Mono', monospace", marginTop: 8 }}>Try refreshing, or use Custom Analysis to paste a headline directly</p>
             </div>
           )}
         </div>

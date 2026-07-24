@@ -4,6 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import Anthropic from "@anthropic-ai/sdk";
 import { PHENOMENEX_CONTEXT } from "./phenomenexContext.js";
+import { getNews } from "./newsService.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -46,6 +47,17 @@ app.post("/api/analyze", async (req, res) => {
   } catch (err) {
     console.error("Analysis failed:", err.message);
     res.status(502).json({ error: "Analysis failed. Please try again." });
+  }
+});
+
+app.get("/api/news", async (req, res) => {
+  try {
+    const force = req.query.refresh === "true";
+    const result = await getNews({ force });
+    res.json(result);
+  } catch (err) {
+    console.error("News fetch failed:", err.message);
+    res.status(502).json({ error: "Couldn't load live news. Please try again.", items: [], errors: [] });
   }
 });
 
