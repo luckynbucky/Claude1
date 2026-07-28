@@ -299,6 +299,9 @@ export default function App() {
       const data = await response.json();
       setNewsItems(data.items || []);
       setFeedErrors(data.errors || []);
+      if (data.errors?.length) {
+        console.warn("News feed source errors:", data.errors);
+      }
     } catch (err) {
       console.error(err);
       setNewsError(err.message || "Couldn't load live news.");
@@ -487,7 +490,10 @@ export default function App() {
             borderRadius: 10, padding: "10px 16px", marginBottom: 16,
             color: "#fcd34d", fontSize: 12, fontFamily: "'DM Mono', monospace"
           }}>
-            {feedErrors.length} source{feedErrors.length > 1 ? "s" : ""} unavailable right now ({feedErrors.map(e => e.source).join(", ")}) — showing headlines from the rest.
+            {feedErrors.length} source{feedErrors.length > 1 ? "s" : ""} unavailable right now — showing headlines from the rest.
+            <div style={{ marginTop: 4, opacity: 0.8 }}>
+              {feedErrors.map(e => `${e.source}: ${e.message}`).join(" · ")}
+            </div>
           </div>
         )}
 
@@ -498,7 +504,12 @@ export default function App() {
             color: "#fca5a5", fontSize: 13, fontFamily: "'IBM Plex Sans', sans-serif",
             display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12
           }}>
-            <span>All news sources are unavailable right now ({feedErrors.map(e => e.source).join(", ")}).</span>
+            <span>
+              All news sources are unavailable right now.
+              <div style={{ marginTop: 4, opacity: 0.8, fontSize: 12 }}>
+                {feedErrors.map(e => `${e.source}: ${e.message}`).join(" · ")}
+              </div>
+            </span>
             <button onClick={() => fetchNews(true)} style={{
               background: "transparent", color: "#fca5a5", border: "1px solid #fca5a566",
               borderRadius: 8, padding: "6px 14px", cursor: "pointer", fontSize: 12,
