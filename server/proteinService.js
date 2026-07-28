@@ -2,9 +2,14 @@ const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const cache = new Map();
 const MAX_PDB_BYTES = 5 * 1024 * 1024;
 
+const FETCH_HEADERS = {
+  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+  "Accept": "application/json, text/plain, */*",
+};
+
 async function searchUniProt(name, uniprotBase) {
   const url = `${uniprotBase}/uniprotkb/search?query=${encodeURIComponent(name)}&fields=accession,protein_name,gene_names,organism_name,reviewed&format=json&size=10`;
-  const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
+  const res = await fetch(url, { headers: FETCH_HEADERS, signal: AbortSignal.timeout(10000) });
   if (!res.ok) throw new Error(`UniProt search failed: ${res.status}`);
   const data = await res.json();
   const results = data.results || [];
@@ -24,7 +29,7 @@ async function searchUniProt(name, uniprotBase) {
 // structure file location, rather than assuming a fixed file-naming pattern.
 async function fetchAlphaFoldStructure(accession, alphafoldBase) {
   const apiUrl = `${alphafoldBase}/api/prediction/${accession}`;
-  const apiRes = await fetch(apiUrl, { signal: AbortSignal.timeout(10000) });
+  const apiRes = await fetch(apiUrl, { headers: FETCH_HEADERS, signal: AbortSignal.timeout(10000) });
   if (!apiRes.ok) {
     return { ok: false, reason: `AlphaFold has no entry for ${accession} (status ${apiRes.status})` };
   }
@@ -35,7 +40,7 @@ async function fetchAlphaFoldStructure(accession, alphafoldBase) {
     return { ok: false, reason: `AlphaFold API returned no model for ${accession}` };
   }
 
-  const fileRes = await fetch(pdbUrl, { signal: AbortSignal.timeout(15000) });
+  const fileRes = await fetch(pdbUrl, { headers: FETCH_HEADERS, signal: AbortSignal.timeout(15000) });
   if (!fileRes.ok) {
     return { ok: false, reason: `Structure file fetch failed (status ${fileRes.status})` };
   }
