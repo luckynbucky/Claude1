@@ -34,7 +34,7 @@ async function fetchFeed(feed) {
   });
 }
 
-export async function getNews({ force = false, feeds = NEWS_FEEDS, limit = 30 } = {}) {
+export async function getNews({ force = false, feeds = NEWS_FEEDS, limit = 150 } = {}) {
   const isFresh = Date.now() - cache.fetchedAt < CACHE_TTL_MS;
   if (!force && isFresh && cache.items.length > 0) {
     return cache;

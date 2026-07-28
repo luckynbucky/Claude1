@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, Suspense, lazy } from "react";
 
 const ProteinViewer = lazy(() => import("./ProteinViewer.jsx"));
 
+const PAGE_SIZE = 15;
+
 function LoadingDots() {
   return (
     <div style={{ display: "flex", gap: 6, alignItems: "center", padding: "8px 0" }}>
@@ -286,6 +288,7 @@ export default function App() {
   const [newsLoading, setNewsLoading] = useState(true);
   const [newsError, setNewsError] = useState(null);
   const [feedErrors, setFeedErrors] = useState([]);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const fetchNews = useCallback(async (force = false) => {
     setNewsLoading(true);
@@ -299,6 +302,7 @@ export default function App() {
       const data = await response.json();
       setNewsItems(data.items || []);
       setFeedErrors(data.errors || []);
+      setVisibleCount(PAGE_SIZE);
       if (data.errors?.length) {
         console.warn("News feed source errors:", data.errors);
       }
@@ -347,7 +351,7 @@ export default function App() {
 
   const handleAnalyzeAll = async () => {
     setAnalyzeAll(true);
-    for (const item of newsItems) {
+    for (const item of newsItems.slice(0, visibleCount)) {
       if (!analyses[item.id]) {
         await analyzeNewsItem(item);
         await new Promise(r => setTimeout(r, 500));
@@ -364,6 +368,8 @@ export default function App() {
   const allNews = [...customNews, ...newsItems];
   const analyzedCount = Object.keys(analyses).length;
   const highOppCount = Object.values(analyses).filter(a => a.opportunity_score >= 7).length;
+  const visibleNewsItems = newsItems.slice(0, visibleCount);
+  const visibleAnalyzedCount = visibleNewsItems.filter(item => analyses[item.id]).length;
 
   return (
     <div style={{
@@ -445,7 +451,7 @@ export default function App() {
                 }}>
                 {newsLoading ? "Refreshing..." : "Refresh Feed"}
               </button>
-              <button onClick={handleAnalyzeAll} disabled={analyzeAll || newsItems.length === 0 || analyzedCount === newsItems.length}
+              <button onClick={handleAnalyzeAll} disabled={analyzeAll || visibleNewsItems.length === 0 || visibleAnalyzedCount === visibleNewsItems.length}
                 style={{
                   background: analyzeAll ? "#1e293b" : "transparent",
                   color: analyzeAll ? "#475569" : "#e8927c",
@@ -532,7 +538,7 @@ export default function App() {
         )}
 
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          {(activeTab === "feed" ? newsItems : customNews).map(item => (
+          {(activeTab === "feed" ? newsItems.slice(0, visibleCount) : customNews).map(item => (
             <NewsCard
               key={item.id}
               item={item}
@@ -541,6 +547,16 @@ export default function App() {
               loading={loadingId === item.id}
             />
           ))}
+          {activeTab === "feed" && visibleCount < newsItems.length && (
+            <button onClick={() => setVisibleCount(v => v + PAGE_SIZE)} style={{
+              background: "transparent", color: "#e8927c", fontWeight: 600,
+              fontSize: 13, padding: "12px 24px", borderRadius: 10,
+              border: "1px solid #e8927c33", cursor: "pointer",
+              fontFamily: "'Space Grotesk', sans-serif", alignSelf: "center", marginTop: 4
+            }}>
+              Load More ({newsItems.length - visibleCount} more available)
+            </button>
+          )}
           {activeTab === "custom" && customNews.length === 0 && (
             <div style={{
               textAlign: "center", padding: "60px 20px", color: "#475569"
