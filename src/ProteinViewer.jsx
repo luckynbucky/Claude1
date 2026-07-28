@@ -51,9 +51,9 @@ export default function ProteinViewer({ proteinMention }) {
   useEffect(() => {
     if (status !== "ready" || !meta?.pdbData || !containerRef.current) return;
     containerRef.current.innerHTML = "";
-    const viewer = $3Dmol.createViewer(containerRef.current, { backgroundColor: "#0a0a18" });
+    const viewer = $3Dmol.createViewer(containerRef.current, { backgroundColor: "#0a0a18", antialias: true });
     viewer.addModel(meta.pdbData, "pdb");
-    viewer.setStyle({}, { cartoon: { color: "spectrum" }, stick: {}, sphere: { scale: 0.3 } });
+    viewer.setStyle({}, { cartoon: { color: "spectrum", thickness: 0.8 } });
     viewer.zoomTo();
     viewer.render();
   }, [status, meta]);
