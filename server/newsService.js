@@ -3,7 +3,10 @@ import { NEWS_FEEDS } from "./newsFeeds.js";
 
 const parser = new Parser({
   timeout: 10000,
-  headers: { "User-Agent": "Mozilla/5.0 (compatible; BioPharmaScout/1.0)" },
+  headers: {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    "Accept": "application/rss+xml, application/xml, text/xml, */*",
+  },
 });
 
 const CACHE_TTL_MS = 10 * 60 * 1000;

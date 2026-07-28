@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import Anthropic from "@anthropic-ai/sdk";
 import { PHENOMENEX_CONTEXT } from "./phenomenexContext.js";
 import { getNews } from "./newsService.js";
+import { resolveProteinStructure } from "./proteinService.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -58,6 +59,24 @@ app.get("/api/news", async (req, res) => {
   } catch (err) {
     console.error("News fetch failed:", err.message);
     res.status(502).json({ error: "Couldn't load live news. Please try again.", items: [], errors: [] });
+  }
+});
+
+app.get("/api/protein-structure", async (req, res) => {
+  const name = req.query.name;
+  if (!name || typeof name !== "string") {
+    return res.status(400).json({ error: "name is required" });
+  }
+
+  try {
+    const result = await resolveProteinStructure(name);
+    if (!result.found) {
+      return res.status(404).json({ error: `No structure found for "${name}"` });
+    }
+    res.json(result);
+  } catch (err) {
+    console.error("Protein structure lookup failed:", err.message);
+    res.status(502).json({ error: "Structure lookup failed. Please try again." });
   }
 });
 

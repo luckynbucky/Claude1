@@ -1,4 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense, lazy } from "react";
+
+const ProteinViewer = lazy(() => import("./ProteinViewer.jsx"));
 
 function LoadingDots() {
   return (
@@ -169,6 +171,12 @@ function NewsCard({ item, onAnalyze, analysis, loading }) {
               ))}
             </div>
           </div>
+
+          {analysis.protein_mention?.name && (
+            <Suspense fallback={<div style={{ padding: "20px 0", color: "#64748b", fontSize: 13, fontFamily: "'DM Mono', monospace" }}>Loading 3D viewer…</div>}>
+              <ProteinViewer proteinMention={analysis.protein_mention} />
+            </Suspense>
+          )}
 
           <div style={{ marginBottom: 20 }}>
             <h4 style={{ color: "#e8927c", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 8px", fontFamily: "'DM Mono', monospace" }}>Talking Points</h4>

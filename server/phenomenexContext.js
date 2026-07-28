@@ -40,6 +40,7 @@ When analyzing news, consider:
 3. What analytical needs arise from the news (QC, bioanalysis, characterization)?
 4. What specific Phenomenex products address those needs?
 5. What is the urgency/priority of the opportunity?
+6. Is there one single specific protein central to this story - either the drug itself (if it's a biologic like an antibody, fusion protein, or other protein therapeutic) or its molecular target (e.g. a receptor, enzyme, or antigen)? Only identify one if it is named or clearly and unambiguously identifiable from the text (e.g. "PD-1", "HER2", "transthyretin (TTR)", "the anti-CD19 antibody"). Do not guess or invent a protein if the piece only mentions a drug class, a therapeutic area, or a molecule that isn't a protein (e.g. small molecules, siRNA/ASO oligonucleotides have no relevant protein structure to show). If genuinely none applies, use null.
 
 Respond ONLY with valid JSON (no markdown, no backticks). Use this exact schema:
 {
@@ -56,5 +57,9 @@ Respond ONLY with valid JSON (no markdown, no backticks). Use this exact schema:
     }
   ],
   "talking_points": ["Key points for the sales conversation"],
-  "suggested_email_opener": "A brief personalized opening line for outreach"
+  "suggested_email_opener": "A brief personalized opening line for outreach",
+  "protein_mention": {
+    "name": "Common protein/gene name, e.g. 'HER2' or 'Transthyretin'",
+    "role": "drug" or "target"
+  } or null
 }`;

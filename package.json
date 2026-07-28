@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.1",
+    "3dmol": "^2.5.5",
     "dotenv": "^17.4.2",
     "express": "^4.21.1",
     "react": "^18.3.1",
