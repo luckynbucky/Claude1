@@ -5,6 +5,7 @@ export default function ProteinViewer({ proteinMention }) {
   const containerRef = useRef(null);
   const [status, setStatus] = useState("loading");
   const [errorMsg, setErrorMsg] = useState("");
+  const [notFoundReason, setNotFoundReason] = useState("");
   const [meta, setMeta] = useState(null);
 
   useEffect(() => {
@@ -12,11 +13,16 @@ export default function ProteinViewer({ proteinMention }) {
     let cancelled = false;
     setStatus("loading");
     setErrorMsg("");
+    setNotFoundReason("");
 
     fetch(`/api/protein-structure?name=${encodeURIComponent(proteinMention.name)}`)
       .then(async (res) => {
         if (res.status === 404) {
-          if (!cancelled) setStatus("notfound");
+          const body = await res.json().catch(() => ({}));
+          if (!cancelled) {
+            setNotFoundReason(body.error || "");
+            setStatus("notfound");
+          }
           return null;
         }
         if (!res.ok) {
@@ -71,7 +77,10 @@ export default function ProteinViewer({ proteinMention }) {
           padding: "16px 20px", background: "#12122a", borderRadius: 12, border: "1px solid #1e293b",
           color: "#64748b", fontSize: 13, fontFamily: "'IBM Plex Sans', sans-serif"
         }}>
-          No predicted structure found for "{proteinMention.name}" in AlphaFold's database.
+          Couldn't find a structure for "{proteinMention.name}".
+          {notFoundReason && (
+            <div style={{ marginTop: 4, fontSize: 11, color: "#475569", fontFamily: "'DM Mono', monospace" }}>{notFoundReason}</div>
+          )}
         </div>
       )}
 

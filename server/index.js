@@ -71,7 +71,8 @@ app.get("/api/protein-structure", async (req, res) => {
   try {
     const result = await resolveProteinStructure(name);
     if (!result.found) {
-      return res.status(404).json({ error: `No structure found for "${name}"` });
+      console.warn(`Protein structure not found for "${name}": ${result.reason}`);
+      return res.status(404).json({ error: result.reason || `No structure found for "${name}"` });
     }
     res.json(result);
   } catch (err) {
