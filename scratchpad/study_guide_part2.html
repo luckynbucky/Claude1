@@ -1,0 +1,950 @@
+<title>NCA-AIIO Visual Study Guide · Part 2</title>
+<style>
+  :root {
+    --bg: #F7F7F2;
+    --surface: #FFFFFF;
+    --surface-alt: #F0F0E8;
+    --ink: #14161A;
+    --ink-soft: #2B2F36;
+    --muted: #5E6570;
+    --border: #E3E3DA;
+    --accent: #76B900;
+    --accent-ink: #14161A;
+    --shadow: 0 1px 2px rgba(20,22,26,.04), 0 8px 24px -12px rgba(20,22,26,.08);
+    --radius: 10px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0F1114; --surface: #171A1E; --surface-alt: #1E2228;
+      --ink: #EAEAE3; --ink-soft: #C4C6BE; --muted: #8B9199;
+      --border: #262A30; --accent: #92DA1E; --accent-ink: #0F1114;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #F7F7F2; --surface: #FFFFFF; --surface-alt: #F0F0E8;
+    --ink: #14161A; --ink-soft: #2B2F36; --muted: #5E6570;
+    --border: #E3E3DA; --accent: #76B900; --accent-ink: #14161A;
+    --shadow: 0 1px 2px rgba(20,22,26,.04), 0 8px 24px -12px rgba(20,22,26,.08);
+  }
+  :root[data-theme="dark"] {
+    --bg: #0F1114; --surface: #171A1E; --surface-alt: #1E2228;
+    --ink: #EAEAE3; --ink-soft: #C4C6BE; --muted: #8B9199;
+    --border: #262A30; --accent: #92DA1E; --accent-ink: #0F1114;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px; line-height: 1.55;
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  }
+  .mono { font-family: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace; }
+
+  header.rail {
+    position: sticky; top: 0; z-index: 20;
+    background: color-mix(in oklab, var(--bg) 88%, transparent);
+    backdrop-filter: saturate(1.1) blur(10px);
+    -webkit-backdrop-filter: saturate(1.1) blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+  .rail-inner {
+    max-width: 1200px; margin: 0 auto; padding: 12px 24px;
+    display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+  }
+  .brand {
+    display: flex; align-items: baseline; gap: 10px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; letter-spacing: 0.02em;
+  }
+  .brand-dot { width: 10px; height: 10px; border-radius: 2px; background: var(--accent); display: inline-block; transform: translateY(1px); }
+  .brand-name { font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink); }
+  .brand-sub { font-size: 12px; color: var(--muted); }
+  .brand-pt2 {
+    font-family: ui-monospace, Menlo, monospace; font-size: 10.5px;
+    padding: 2px 8px; border: 1px solid var(--accent); color: var(--accent);
+    border-radius: 999px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600;
+  }
+  nav.jumps { display: flex; gap: 4px; margin-left: auto; flex-wrap: wrap; }
+  nav.jumps a {
+    text-decoration: none; color: var(--ink-soft);
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 8px 12px; border-radius: 6px; border: 1px solid transparent;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  nav.jumps a:hover, nav.jumps a:focus-visible {
+    background: var(--surface-alt); border-color: var(--border); outline: none;
+  }
+  nav.jumps a .w {
+    font-size: 10.5px; color: var(--muted);
+    padding: 2px 6px; border: 1px solid var(--border); border-radius: 999px;
+    font-variant-numeric: tabular-nums;
+  }
+  .theme-toggle {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--ink-soft); border-radius: 6px;
+    font-family: ui-monospace, Menlo, monospace; font-size: 11px;
+    padding: 6px 10px; cursor: pointer; letter-spacing: 0.08em;
+  }
+  .theme-toggle:hover { background: var(--surface-alt); }
+
+  .hero { max-width: 1200px; margin: 0 auto; padding: 48px 24px 24px; }
+  .hero-eyebrow {
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .hero-eyebrow::before { content: ""; width: 22px; height: 1px; background: var(--accent); }
+  .hero h1 {
+    font-size: clamp(32px, 4.5vw, 54px); line-height: 1.02; margin: 0 0 16px;
+    letter-spacing: -0.02em; font-weight: 700; text-wrap: balance; color: var(--ink);
+  }
+  .hero h1 em { font-style: normal; color: var(--accent); font-weight: 700; }
+  .hero p.lede {
+    font-size: 17px; max-width: 62ch; color: var(--ink-soft);
+    margin: 0 0 32px; line-height: 1.55;
+  }
+  .callout {
+    background: var(--surface); border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 18px 22px; border-radius: 8px;
+    font-size: 14px; color: var(--ink-soft); max-width: 780px;
+  }
+  .callout strong { color: var(--ink); }
+
+  section.chapter {
+    max-width: 1200px; margin: 0 auto; padding: 56px 24px 24px;
+    scroll-margin-top: 80px;
+  }
+  .chapter-head {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 24px; padding-bottom: 20px;
+    border-bottom: 1px solid var(--border); margin-bottom: 32px; flex-wrap: wrap;
+  }
+  .chapter-head .left { display: flex; flex-direction: column; gap: 6px; }
+  .chapter-head .num {
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 11px; letter-spacing: 0.16em; color: var(--tag);
+    text-transform: uppercase; display: flex; align-items: center; gap: 10px;
+  }
+  .chapter-head .num::before { content: ""; width: 8px; height: 8px; background: var(--tag); border-radius: 50%; }
+  .chapter-head h2 {
+    margin: 0; font-size: clamp(26px, 3.4vw, 38px);
+    letter-spacing: -0.02em; font-weight: 700; line-height: 1.1;
+  }
+  .chapter-head .weight-pill {
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 12px; letter-spacing: 0.08em;
+    padding: 6px 12px; border-radius: 999px;
+    background: var(--tag); color: white;
+    font-variant-numeric: tabular-nums; font-weight: 600;
+  }
+  .chapter-head .blurb { color: var(--muted); font-size: 14px; max-width: 60ch; }
+
+  .cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  @media (max-width: 900px) { .cards { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow);
+    display: flex; flex-direction: column; position: relative;
+  }
+  .card::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0;
+    height: 2px; background: var(--tag);
+  }
+  .card.wide { grid-column: 1 / -1; }
+  .card-head { padding: 18px 20px 8px; }
+  .card-code {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 11px; letter-spacing: 0.1em; color: var(--muted);
+    text-transform: uppercase; margin-bottom: 8px;
+  }
+  .card-code .dot { width: 6px; height: 6px; background: var(--tag); border-radius: 50%; }
+  .card h3 {
+    margin: 0; font-size: 18px; font-weight: 600;
+    letter-spacing: -0.01em; line-height: 1.28;
+    color: var(--ink); text-wrap: balance;
+  }
+  .bullets {
+    list-style: none; padding: 4px 20px 16px; margin: 0;
+    display: flex; flex-direction: column; gap: 10px;
+    font-size: 14px; color: var(--ink-soft); line-height: 1.5;
+  }
+  .bullets li { padding-left: 18px; position: relative; }
+  .bullets li::before {
+    content: ""; position: absolute; left: 0; top: 8px;
+    width: 8px; height: 2px; background: var(--tag); border-radius: 1px;
+  }
+  .bullets li strong { color: var(--ink); font-weight: 600; }
+
+  .diagram {
+    background: var(--surface-alt); border-top: 1px solid var(--border);
+    padding: 20px; margin-top: auto;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 180px;
+  }
+  .diagram svg { width: 100%; height: auto; max-width: 100%; display: block; }
+  .diagram-cap {
+    background: var(--surface-alt); padding: 0 20px 14px;
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted); text-align: center;
+    border-top: 0;
+  }
+
+  /* Comparison table styling */
+  .cmp {
+    width: 100%; border-collapse: collapse; font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .cmp th, .cmp td {
+    padding: 10px 12px; border-bottom: 1px solid var(--border);
+    text-align: left; vertical-align: top;
+  }
+  .cmp thead th {
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); font-weight: 600;
+    border-bottom: 1px solid var(--border);
+  }
+  .cmp tbody tr:last-child td { border-bottom: 0; }
+  .cmp .rowlbl {
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 11px; letter-spacing: 0.06em;
+    color: var(--muted); text-transform: uppercase;
+    width: 30%;
+  }
+  .cmp .col-a { color: var(--ink); }
+  .cmp .col-b { color: var(--ink); }
+  .cmp-wrap { overflow-x: auto; padding: 8px 20px 20px; }
+
+  footer.foot {
+    max-width: 1200px; margin: 0 auto; padding: 56px 24px 40px;
+    color: var(--muted); font-size: 12px;
+    border-top: 1px solid var(--border); margin-top: 40px;
+    display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap;
+  }
+  footer.foot .mono { letter-spacing: 0.06em; }
+
+  ::selection { background: color-mix(in oklab, var(--accent) 40%, transparent); color: var(--ink); }
+
+  @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+
+  /* SVG shared styles */
+  .svg-ink { fill: var(--ink); }
+  .svg-muted { fill: var(--muted); }
+  .svg-border { stroke: var(--border); }
+  .svg-accent { fill: var(--accent); }
+</style>
+
+<header class="rail">
+  <div class="rail-inner">
+    <div class="brand">
+      <span class="brand-dot" aria-hidden="true"></span>
+      <span class="brand-name">NCA-AIIO</span>
+      <span class="brand-sub">Visual Study Guide</span>
+      <span class="brand-pt2">Part 2 · Gaps</span>
+    </div>
+    <nav class="jumps" aria-label="Sections">
+      <a href="#essential">Essential AI <span class="w">38%</span></a>
+      <a href="#infra">Infrastructure <span class="w">40%</span></a>
+      <a href="#ops">Operations <span class="w">22%</span></a>
+    </nav>
+    <button class="theme-toggle" id="themeBtn" aria-label="Toggle theme">Theme</button>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="hero-eyebrow">Companion to Part 1 · Fills the gaps not in your screenshots</div>
+  <h1>The topics your slides <em>didn't cover</em>, drawn as diagrams.</h1>
+  <p class="lede">Part 1 handled the hardware, DPUs, networking, and storage &mdash; where your captures were strongest. This part covers the concepts, software stack, lifecycle, and the entire Operations section using inline diagrams instead of slides.</p>
+  <div class="callout">
+    <strong>Read alongside Part 1.</strong> Same topic codes, same three sections, same color coding &mdash; steel blue for Essential AI, forest for Infrastructure, ochre for Operations. Nothing here duplicates Part 1.
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- Section 1: Essential AI Knowledge -->
+<!-- ============================================================ -->
+<section class="chapter" id="essential" style="--tag: #3B4A5B;">
+  <div class="chapter-head">
+    <div class="left">
+      <div class="num">Section 01</div>
+      <h2>Essential AI Knowledge</h2>
+      <div class="blurb">Concepts, definitions, the software stack, the lifecycle &mdash; the fundamental questions this exam always asks.</div>
+    </div>
+    <div class="weight-pill">38%</div>
+  </div>
+  <div class="cards">
+
+    <!-- 1.3 AI vs ML vs DL -->
+    <article class="card">
+      <div class="card-head">
+        <div class="card-code"><span class="dot"></span>Topic 1.3</div>
+        <h3>AI vs Machine Learning vs Deep Learning</h3>
+      </div>
+      <ul class="bullets">
+        <li><strong>AI</strong> is the umbrella: any system that mimics human cognitive tasks &mdash; reasoning, perception, decision-making.</li>
+        <li><strong>Machine Learning (ML)</strong> is a subset of AI: systems that learn patterns from data rather than being explicitly programmed.</li>
+        <li><strong>Deep Learning (DL)</strong> is a subset of ML: uses multi-layered neural networks. Powers computer vision, NLP, generative AI.</li>
+        <li>Every DL system is ML and AI; not every AI system is ML or DL.</li>
+      </ul>
+      <div class="diagram">
+        <svg viewBox="0 0 380 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Nested rectangles showing DL inside ML inside AI">
+          <rect x="10" y="20" width="360" height="160" rx="8" fill="none" stroke="#3B4A5B" stroke-width="1.5" opacity="0.85"/>
+          <rect x="70" y="45" width="240" height="115" rx="6" fill="none" stroke="#3B4A5B" stroke-width="1.5" opacity="0.7"/>
+          <rect x="140" y="72" width="100" height="65" rx="4" fill="#3B4A5B" opacity="0.14" stroke="#3B4A5B" stroke-width="1.5"/>
+          <text x="20" y="42" font-family="ui-monospace, Menlo, monospace" font-size="11" font-weight="700" fill="#3B4A5B" letter-spacing="0.1em">AI</text>
+          <text x="80" y="65" font-family="ui-monospace, Menlo, monospace" font-size="11" font-weight="700" fill="#3B4A5B" letter-spacing="0.1em">ML</text>
+          <text x="190" y="110" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="12" font-weight="700" fill="#3B4A5B" letter-spacing="0.06em">DL</text>
+        </svg>
+      </div>
+      <div class="diagram-cap">Subset relationship</div>
+    </article>
+
+    <!-- 1.4 Factors driving AI -->
+    <article class="card">
+      <div class="card-head">
+        <div class="card-code"><span class="dot"></span>Topic 1.4</div>
+        <h3>Why AI progress accelerated recently &mdash; four drivers</h3>
+      </div>
+      <ul class="bullets">
+        <li><strong>Data.</strong> Internet-scale corpora, sensors, labeled datasets &mdash; training material at previously impossible scale.</li>
+        <li><strong>Compute.</strong> GPU parallelism (thousands of cores) makes training deep networks tractable.</li>
+        <li><strong>Algorithms.</strong> Transformer architecture (2017) enabled attention-based models and modern LLMs.</li>
+        <li><strong>Open-source frameworks.</strong> PyTorch, TensorFlow, CUDA, Hugging Face &mdash; researchers can share and reproduce.</li>
+      </ul>
+      <div class="diagram">
+        <svg viewBox="0 0 380 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Four quadrants labeled Data, Compute, Algorithms, Open source">
+          <rect x="10" y="10" width="175" height="85" rx="6" fill="#3B4A5B" opacity="0.12"/>
+          <text x="97.5" y="45" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="11" font-weight="700" fill="#3B4A5B" letter-spacing="0.1em">DATA</text>
+          <text x="97.5" y="68" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#5E6570">Internet-scale</text>
+          <text x="97.5" y="82" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#5E6570">labeled sets</text>
+
+          <rect x="195" y="10" width="175" height="85" rx="6" fill="#3B4A5B" opacity="0.12"/>
+          <text x="282.5" y="45" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="11" font-weight="700" fill="#3B4A5B" letter-spacing="0.1em">COMPUTE</text>
+          <text x="282.5" y="68" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#5E6570">GPU parallelism</text>
+          <text x="282.5" y="82" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#5E6570">1000s of cores</text>
+
+          <rect x="10" y="105" width="175" height="85" rx="6" fill="#3B4A5B" opacity="0.12"/>
+          <text x="97.5" y="140" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="11" font-weight="700" fill="#3B4A5B" letter-spacing="0.1em">ALGORITHMS</text>
+          <text x="97.5" y="163" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#5E6570">Transformers,</text>
+          <text x="97.5" y="177" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#5E6570">attention</text>
+
+          <rect x="195" y="105" width="175" height="85" rx="6" fill="#3B4A5B" opacity="0.12"/>
+          <text x="282.5" y="140" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="11" font-weight="700" fill="#3B4A5B" letter-spacing="0.1em">OPEN SOURCE</text>
+          <text x="282.5" y="163" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#5E6570">PyTorch, CUDA,</text>
+          <text x="282.5" y="177" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#5E6570">Hugging Face</text>
+        </svg>
+      </div>
+      <div class="diagram-cap">Four levers behind the acceleration</div>
+    </article>
+
+    <!-- 1.8 GPU vs CPU -->
+    <article class="card wide">
+      <div class="card-head">
+        <div class="card-code"><span class="dot"></span>Topic 1.8</div>
+        <h3>GPU vs CPU architecture &mdash; the head-to-head</h3>
+      </div>
+      <ul class="bullets">
+        <li><strong>CPU</strong> optimizes for <em>latency</em>: a few complex cores with large caches, deep pipelines, branch prediction, out-of-order execution. Best for serial and diverse tasks.</li>
+        <li><strong>GPU</strong> optimizes for <em>throughput</em>: thousands of simpler cores running in SIMT (Single Instruction, Multiple Threads) &mdash; the same op applied to massive data in parallel.</li>
+        <li>Matrix multiplication (the core of DL training and inference) is embarrassingly parallel &mdash; that's why GPUs dominate AI.</li>
+        <li>Modern systems <strong>pair them</strong>: CPU for orchestration, I/O, and serial logic; GPU for compute-heavy tensor work.</li>
+      </ul>
+      <div class="diagram">
+        <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="CPU with a few large cores next to GPU with many small cores">
+          <!-- CPU -->
+          <rect x="20" y="30" width="300" height="160" rx="8" fill="none" stroke="#3B4A5B" stroke-width="1.5"/>
+          <text x="170" y="20" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="12" font-weight="700" fill="#3B4A5B" letter-spacing="0.14em">CPU · LATENCY</text>
+          <!-- Few big cores -->
+          <g fill="#3B4A5B" opacity="0.7">
+            <rect x="45" y="55" width="120" height="55" rx="4"/>
+            <rect x="175" y="55" width="120" height="55" rx="4"/>
+            <rect x="45" y="120" width="120" height="55" rx="4"/>
+            <rect x="175" y="120" width="120" height="55" rx="4"/>
+          </g>
+          <g fill="#FFFFFF" opacity="0.75">
+            <text x="105" y="87" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="10" font-weight="600">CORE</text>
+            <text x="235" y="87" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="10" font-weight="600">CORE</text>
+            <text x="105" y="152" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="10" font-weight="600">CORE</text>
+            <text x="235" y="152" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="10" font-weight="600">CORE</text>
+          </g>
+          <text x="170" y="205" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#5E6570">Few complex cores · large caches · serial</text>
+
+          <!-- GPU -->
+          <rect x="380" y="30" width="300" height="160" rx="8" fill="none" stroke="#76B900" stroke-width="1.5"/>
+          <text x="530" y="20" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="12" font-weight="700" fill="#76B900" letter-spacing="0.14em">GPU · THROUGHPUT</text>
+          <!-- Grid of tiny cores -->
+          <g fill="#76B900" opacity="0.75">
+            <!-- 12 x 5 grid -->
+            <g id="cell-row">
+            </g>
+          </g>
+          <g fill="#76B900" opacity="0.7">
+            <!-- 14 cols x 6 rows = 84 cells -->
+            <!-- We'll spell them out -->
+            <!-- row 1 -->
+            <rect x="395" y="55" width="14" height="14" rx="1.5"/>
+            <rect x="414" y="55" width="14" height="14" rx="1.5"/>
+            <rect x="433" y="55" width="14" height="14" rx="1.5"/>
+            <rect x="452" y="55" width="14" height="14" rx="1.5"/>
+            <rect x="471" y="55" width="14" height="14" rx="1.5"/>
+            <rect x="490" y="55" width="14" height="14" rx="1.5"/>
+            <rect x="509" y="55" width="14" height="14" rx="1.5"/>
+            <rect x="528" y="55" width="14" height="14" rx="1.5"/>
+            <rect x="547" y="55" width="14" height="14" rx="1.5"/>
+            <rect x="566" y="55" width="14" height="14" rx="1.5"/>
+            <rect x="585" y="55" width="14" height="14" rx="1.5"/>
+            <rect x="604" y="55" width="14" height="14" rx="1.5"/>
+            <rect x="623" y="55" width="14" height="14" rx="1.5"/>
+            <rect x="642" y="55" width="14" height="14" rx="1.5"/>
+            <!-- row 2 -->
+            <rect x="395" y="74" width="14" height="14" rx="1.5"/>
+            <rect x="414" y="74" width="14" height="14" rx="1.5"/>
+            <rect x="433" y="74" width="14" height="14" rx="1.5"/>
+            <rect x="452" y="74" width="14" height="14" rx="1.5"/>
+            <rect x="471" y="74" width="14" height="14" rx="1.5"/>
+            <rect x="490" y="74" width="14" height="14" rx="1.5"/>
+            <rect x="509" y="74" width="14" height="14" rx="1.5"/>
+            <rect x="528" y="74" width="14" height="14" rx="1.5"/>
+            <rect x="547" y="74" width="14" height="14" rx="1.5"/>
+            <rect x="566" y="74" width="14" height="14" rx="1.5"/>
+            <rect x="585" y="74" width="14" height="14" rx="1.5"/>
+            <rect x="604" y="74" width="14" height="14" rx="1.5"/>
+            <rect x="623" y="74" width="14" height="14" rx="1.5"/>
+            <rect x="642" y="74" width="14" height="14" rx="1.5"/>
+            <!-- row 3 -->
+            <rect x="395" y="93" width="14" height="14" rx="1.5"/>
+            <rect x="414" y="93" width="14" height="14" rx="1.5"/>
+            <rect x="433" y="93" width="14" height="14" rx="1.5"/>
+            <rect x="452" y="93" width="14" height="14" rx="1.5"/>
+            <rect x="471" y="93" width="14" height="14" rx="1.5"/>
+            <rect x="490" y="93" width="14" height="14" rx="1.5"/>
+            <rect x="509" y="93" width="14" height="14" rx="1.5"/>
+            <rect x="528" y="93" width="14" height="14" rx="1.5"/>
+            <rect x="547" y="93" width="14" height="14" rx="1.5"/>
+            <rect x="566" y="93" width="14" height="14" rx="1.5"/>
+            <rect x="585" y="93" width="14" height="14" rx="1.5"/>
+            <rect x="604" y="93" width="14" height="14" rx="1.5"/>
+            <rect x="623" y="93" width="14" height="14" rx="1.5"/>
+            <rect x="642" y="93" width="14" height="14" rx="1.5"/>
+            <!-- row 4 -->
+            <rect x="395" y="112" width="14" height="14" rx="1.5"/>
+            <rect x="414" y="112" width="14" height="14" rx="1.5"/>
+            <rect x="433" y="112" width="14" height="14" rx="1.5"/>
+            <rect x="452" y="112" width="14" height="14" rx="1.5"/>
+            <rect x="471" y="112" width="14" height="14" rx="1.5"/>
+            <rect x="490" y="112" width="14" height="14" rx="1.5"/>
+            <rect x="509" y="112" width="14" height="14" rx="1.5"/>
+            <rect x="528" y="112" width="14" height="14" rx="1.5"/>
+            <rect x="547" y="112" width="14" height="14" rx="1.5"/>
+            <rect x="566" y="112" width="14" height="14" rx="1.5"/>
+            <rect x="585" y="112" width="14" height="14" rx="1.5"/>
+            <rect x="604" y="112" width="14" height="14" rx="1.5"/>
+            <rect x="623" y="112" width="14" height="14" rx="1.5"/>
+            <rect x="642" y="112" width="14" height="14" rx="1.5"/>
+            <!-- row 5 -->
+            <rect x="395" y="131" width="14" height="14" rx="1.5"/>
+            <rect x="414" y="131" width="14" height="14" rx="1.5"/>
+            <rect x="433" y="131" width="14" height="14" rx="1.5"/>
+            <rect x="452" y="131" width="14" height="14" rx="1.5"/>
+            <rect x="471" y="131" width="14" height="14" rx="1.5"/>
+            <rect x="490" y="131" width="14" height="14" rx="1.5"/>
+            <rect x="509" y="131" width="14" height="14" rx="1.5"/>
+            <rect x="528" y="131" width="14" height="14" rx="1.5"/>
+            <rect x="547" y="131" width="14" height="14" rx="1.5"/>
+            <rect x="566" y="131" width="14" height="14" rx="1.5"/>
+            <rect x="585" y="131" width="14" height="14" rx="1.5"/>
+            <rect x="604" y="131" width="14" height="14" rx="1.5"/>
+            <rect x="623" y="131" width="14" height="14" rx="1.5"/>
+            <rect x="642" y="131" width="14" height="14" rx="1.5"/>
+            <!-- row 6 -->
+            <rect x="395" y="150" width="14" height="14" rx="1.5"/>
+            <rect x="414" y="150" width="14" height="14" rx="1.5"/>
+            <rect x="433" y="150" width="14" height="14" rx="1.5"/>
+            <rect x="452" y="150" width="14" height="14" rx="1.5"/>
+            <rect x="471" y="150" width="14" height="14" rx="1.5"/>
+            <rect x="490" y="150" width="14" height="14" rx="1.5"/>
+            <rect x="509" y="150" width="14" height="14" rx="1.5"/>
+            <rect x="528" y="150" width="14" height="14" rx="1.5"/>
+            <rect x="547" y="150" width="14" height="14" rx="1.5"/>
+            <rect x="566" y="150" width="14" height="14" rx="1.5"/>
+            <rect x="585" y="150" width="14" height="14" rx="1.5"/>
+            <rect x="604" y="150" width="14" height="14" rx="1.5"/>
+            <rect x="623" y="150" width="14" height="14" rx="1.5"/>
+            <rect x="642" y="150" width="14" height="14" rx="1.5"/>
+          </g>
+          <text x="530" y="205" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#5E6570">Thousands of simple cores · SIMT · parallel</text>
+        </svg>
+      </div>
+      <div class="diagram-cap">CPU: few complex cores · GPU: massive parallelism</div>
+    </article>
+
+    <!-- 1.2 Training vs Inference -->
+    <article class="card wide">
+      <div class="card-head">
+        <div class="card-code"><span class="dot"></span>Topic 1.2</div>
+        <h3>Training vs Inference &mdash; different jobs, different requirements</h3>
+      </div>
+      <div class="cmp-wrap">
+        <table class="cmp">
+          <thead>
+            <tr><th>Dimension</th><th class="col-a">Training</th><th class="col-b">Inference</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="rowlbl">Goal</td>
+              <td class="col-a">Learn model weights from data</td>
+              <td class="col-b">Use trained weights to make predictions</td></tr>
+            <tr><td class="rowlbl">Compute intensity</td>
+              <td class="col-a">Enormous &mdash; forward + backward pass on billions of parameters</td>
+              <td class="col-b">Lower &mdash; forward pass only</td></tr>
+            <tr><td class="rowlbl">GPU memory</td>
+              <td class="col-a">Very large &mdash; must hold weights, activations, gradients, optimizer state</td>
+              <td class="col-b">Smaller &mdash; only weights + activations</td></tr>
+            <tr><td class="rowlbl">Precision</td>
+              <td class="col-a">Higher &mdash; FP32, FP16, BF16, mixed precision</td>
+              <td class="col-b">Lower is fine &mdash; INT8, FP8, quantized formats</td></tr>
+            <tr><td class="rowlbl">Duration</td>
+              <td class="col-a">Days to weeks per run</td>
+              <td class="col-b">Milliseconds per request</td></tr>
+            <tr><td class="rowlbl">Interconnect</td>
+              <td class="col-a">Critical &mdash; NVLink, NVSwitch, InfiniBand for multi-GPU/multi-node</td>
+              <td class="col-b">Less critical &mdash; often single-GPU or single-node</td></tr>
+            <tr><td class="rowlbl">NVIDIA hardware fit</td>
+              <td class="col-a">DGX H100/H200/B200/B300, GB200/GB300 NVL72</td>
+              <td class="col-b">L4, L40, L40S, plus H100/B200 for the largest LLMs</td></tr>
+            <tr><td class="rowlbl">Key optimization tool</td>
+              <td class="col-a">CUDA, cuDNN, NCCL, mixed-precision libraries</td>
+              <td class="col-b"><strong>TensorRT</strong> (compile/optimize), <strong>Triton Inference Server</strong> (serve)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <!-- 1.1 NVIDIA Software Stack -->
+    <article class="card wide">
+      <div class="card-head">
+        <div class="card-code"><span class="dot"></span>Topic 1.1</div>
+        <h3>NVIDIA software stack &mdash; from silicon to application</h3>
+      </div>
+      <ul class="bullets">
+        <li><strong>CUDA</strong> &mdash; parallel computing platform + programming model. The foundation everything else uses.</li>
+        <li><strong>CUDA-X libraries</strong> &mdash; domain-specific: cuDNN (deep learning), cuBLAS (linear algebra), NCCL (multi-GPU comms), cuGraph, cuML.</li>
+        <li><strong>RAPIDS</strong> &mdash; GPU-accelerated data science; pandas/scikit-learn API on GPU.</li>
+        <li><strong>Frameworks</strong> &mdash; PyTorch, TensorFlow, JAX all sit on CUDA/cuDNN.</li>
+        <li><strong>TensorRT</strong> &mdash; inference optimizer + runtime; compiles models to run fast on NVIDIA GPUs.</li>
+        <li><strong>Triton Inference Server</strong> &mdash; production model server; handles multiple models, dynamic batching, multiple frameworks.</li>
+        <li><strong>NeMo</strong> &mdash; framework for building/training/customizing generative AI (LLMs, speech, vision).</li>
+        <li><strong>NVIDIA AI Enterprise</strong> &mdash; commercial suite with support; bundles the frameworks + tools for production.</li>
+        <li><strong>NGC</strong> &mdash; the catalog: pre-trained models, containers, Helm charts, all optimized for NVIDIA hardware.</li>
+      </ul>
+      <div class="diagram">
+        <svg viewBox="0 0 700 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Layered NVIDIA software stack from GPU hardware up to applications">
+          <!-- Layer 5: Apps -->
+          <rect x="20" y="15" width="660" height="34" rx="4" fill="#3B4A5B" opacity="0.18" stroke="#3B4A5B" stroke-width="1"/>
+          <text x="30" y="37" font-family="ui-monospace, Menlo, monospace" font-size="11" font-weight="700" fill="#3B4A5B" letter-spacing="0.08em">APPLICATIONS</text>
+          <text x="670" y="37" text-anchor="end" font-family="system-ui, sans-serif" font-size="11" fill="#5E6570">Chatbots · Search · Vision · Recommender · Autonomous</text>
+
+          <!-- Layer 4: Deployment / GenAI -->
+          <rect x="20" y="54" width="660" height="34" rx="4" fill="#3B4A5B" opacity="0.12" stroke="#3B4A5B" stroke-width="1"/>
+          <text x="30" y="76" font-family="ui-monospace, Menlo, monospace" font-size="11" font-weight="700" fill="#3B4A5B" letter-spacing="0.08em">SERVE / DEPLOY / GEN-AI</text>
+          <text x="670" y="76" text-anchor="end" font-family="system-ui, sans-serif" font-size="11" fill="#5E6570">TensorRT · Triton · NeMo · NIM · Riva</text>
+
+          <!-- Layer 3: Frameworks -->
+          <rect x="20" y="93" width="660" height="34" rx="4" fill="#3B4A5B" opacity="0.12" stroke="#3B4A5B" stroke-width="1"/>
+          <text x="30" y="115" font-family="ui-monospace, Menlo, monospace" font-size="11" font-weight="700" fill="#3B4A5B" letter-spacing="0.08em">FRAMEWORKS · DATA</text>
+          <text x="670" y="115" text-anchor="end" font-family="system-ui, sans-serif" font-size="11" fill="#5E6570">PyTorch · TensorFlow · JAX · RAPIDS · Spark</text>
+
+          <!-- Layer 2: CUDA-X -->
+          <rect x="20" y="132" width="660" height="34" rx="4" fill="#3B4A5B" opacity="0.12" stroke="#3B4A5B" stroke-width="1"/>
+          <text x="30" y="154" font-family="ui-monospace, Menlo, monospace" font-size="11" font-weight="700" fill="#3B4A5B" letter-spacing="0.08em">CUDA-X LIBRARIES</text>
+          <text x="670" y="154" text-anchor="end" font-family="system-ui, sans-serif" font-size="11" fill="#5E6570">cuDNN · cuBLAS · NCCL · cuML · cuGraph</text>
+
+          <!-- Layer 1: CUDA -->
+          <rect x="20" y="171" width="660" height="34" rx="4" fill="#76B900" opacity="0.20" stroke="#76B900" stroke-width="1.5"/>
+          <text x="30" y="193" font-family="ui-monospace, Menlo, monospace" font-size="11" font-weight="700" fill="#76B900" letter-spacing="0.08em">CUDA · PROGRAMMING MODEL</text>
+          <text x="670" y="193" text-anchor="end" font-family="system-ui, sans-serif" font-size="11" fill="#5E6570">The foundation</text>
+
+          <!-- Layer 0: Hardware -->
+          <rect x="20" y="210" width="660" height="34" rx="4" fill="#14161A" opacity="0.85" stroke="#14161A" stroke-width="1"/>
+          <text x="30" y="232" font-family="ui-monospace, Menlo, monospace" font-size="11" font-weight="700" fill="#F7F7F2" letter-spacing="0.08em">GPU HARDWARE</text>
+          <text x="670" y="232" text-anchor="end" font-family="system-ui, sans-serif" font-size="11" fill="#F0F0E8">Hopper · Blackwell · Ada Lovelace · Grace CPU</text>
+        </svg>
+      </div>
+      <div class="diagram-cap">The stack &mdash; every layer above CUDA depends on it</div>
+    </article>
+
+    <!-- 1.7 AI Lifecycle -->
+    <article class="card wide">
+      <div class="card-head">
+        <div class="card-code"><span class="dot"></span>Topic 1.7</div>
+        <h3>AI development lifecycle &mdash; and which NVIDIA tool lives at each stage</h3>
+      </div>
+      <ul class="bullets">
+        <li><strong>Data ingestion &amp; prep</strong> &mdash; ETL, cleaning, labeling. Tool: <em>RAPIDS</em> (GPU-accelerated pandas/dataframes).</li>
+        <li><strong>Training</strong> &mdash; the compute-heavy step. Tools: <em>PyTorch/TensorFlow</em> on <em>CUDA/cuDNN</em>; <em>NeMo</em> for generative AI; <em>NCCL</em> for multi-GPU.</li>
+        <li><strong>Validation</strong> &mdash; measure accuracy, bias, drift on held-out data.</li>
+        <li><strong>Optimization</strong> &mdash; compile and quantize for target hardware. Tool: <em>TensorRT</em>.</li>
+        <li><strong>Deployment</strong> &mdash; serve at scale. Tool: <em>Triton Inference Server</em> (multi-model, multi-framework, dynamic batching).</li>
+        <li><strong>Monitoring</strong> &mdash; watch latency, throughput, accuracy drift, GPU health. Tool: <em>DCGM</em> for GPU metrics.</li>
+        <li><strong>Retraining</strong> &mdash; loop back when data drifts or accuracy drops. This is what makes it a cycle, not a line.</li>
+      </ul>
+      <div class="diagram">
+        <svg viewBox="0 0 700 190" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Circular AI lifecycle from data through deployment back to retraining">
+          <g font-family="ui-monospace, Menlo, monospace" font-size="10" font-weight="700" letter-spacing="0.06em">
+            <!-- 7 stages arranged as a pipeline -->
+            <g fill="#3B4A5B" opacity="0.15">
+              <rect x="20" y="65" width="82" height="60" rx="6"/>
+              <rect x="115" y="65" width="82" height="60" rx="6"/>
+              <rect x="210" y="65" width="82" height="60" rx="6"/>
+              <rect x="305" y="65" width="82" height="60" rx="6"/>
+              <rect x="400" y="65" width="82" height="60" rx="6"/>
+              <rect x="495" y="65" width="82" height="60" rx="6"/>
+              <rect x="590" y="65" width="90" height="60" rx="6"/>
+            </g>
+            <g fill="#3B4A5B">
+              <text x="61" y="90" text-anchor="middle">DATA</text>
+              <text x="61" y="103" text-anchor="middle" font-size="9">RAPIDS</text>
+              <text x="156" y="90" text-anchor="middle">TRAIN</text>
+              <text x="156" y="103" text-anchor="middle" font-size="9">PyTorch</text>
+              <text x="251" y="90" text-anchor="middle">VALIDATE</text>
+              <text x="346" y="90" text-anchor="middle">OPTIMIZE</text>
+              <text x="346" y="103" text-anchor="middle" font-size="9">TensorRT</text>
+              <text x="441" y="90" text-anchor="middle">DEPLOY</text>
+              <text x="441" y="103" text-anchor="middle" font-size="9">Triton</text>
+              <text x="536" y="90" text-anchor="middle">MONITOR</text>
+              <text x="536" y="103" text-anchor="middle" font-size="9">DCGM</text>
+              <text x="635" y="90" text-anchor="middle">RETRAIN</text>
+            </g>
+            <!-- arrows -->
+            <g stroke="#3B4A5B" stroke-width="1.2" fill="none" opacity="0.6">
+              <path d="M102 95 L115 95" marker-end="url(#arrH)"/>
+              <path d="M197 95 L210 95" marker-end="url(#arrH)"/>
+              <path d="M292 95 L305 95" marker-end="url(#arrH)"/>
+              <path d="M387 95 L400 95" marker-end="url(#arrH)"/>
+              <path d="M482 95 L495 95" marker-end="url(#arrH)"/>
+              <path d="M577 95 L590 95" marker-end="url(#arrH)"/>
+              <!-- return arc from retrain back to data -->
+              <path d="M635 125 L635 155 L61 155 L61 125" marker-end="url(#arrH)"/>
+            </g>
+            <defs>
+              <marker id="arrH" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                <path d="M0 0 L10 5 L0 10 z" fill="#3B4A5B" opacity="0.6"/>
+              </marker>
+            </defs>
+            <text x="350" y="180" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" font-weight="400" fill="#5E6570">Retraining loops back to data &mdash; this is why it's a cycle</text>
+          </g>
+        </svg>
+      </div>
+      <div class="diagram-cap">Seven stages · one NVIDIA tool per stage</div>
+    </article>
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- Section 2: AI Infrastructure -->
+<!-- ============================================================ -->
+<section class="chapter" id="infra" style="--tag: #2E6B4A;">
+  <div class="chapter-head">
+    <div class="left">
+      <div class="num">Section 02</div>
+      <h2>AI Infrastructure</h2>
+      <div class="blurb">Just the gap Part 1 left thin: the classic on-prem vs cloud trade-off comparison.</div>
+    </div>
+    <div class="weight-pill">40%</div>
+  </div>
+  <div class="cards">
+
+    <article class="card wide">
+      <div class="card-head">
+        <div class="card-code"><span class="dot"></span>Topic 2.4</div>
+        <h3>On-Prem vs Cloud &mdash; the trade-off table</h3>
+      </div>
+      <div class="cmp-wrap">
+        <table class="cmp">
+          <thead>
+            <tr><th>Dimension</th><th class="col-a">On-Premises</th><th class="col-b">Cloud</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="rowlbl">Cost model</td>
+              <td class="col-a">CapEx &mdash; large up-front purchase, depreciated</td>
+              <td class="col-b">OpEx &mdash; pay-as-you-go, monthly</td></tr>
+            <tr><td class="rowlbl">Time to start</td>
+              <td class="col-a">Months &mdash; procurement, install, network, power</td>
+              <td class="col-b">Minutes &mdash; provision an instance</td></tr>
+            <tr><td class="rowlbl">Scale-up flexibility</td>
+              <td class="col-a">Slow &mdash; buy more hardware</td>
+              <td class="col-b">Elastic &mdash; scale up/down on demand</td></tr>
+            <tr><td class="rowlbl">Data residency &amp; sovereignty</td>
+              <td class="col-a">Full control &mdash; data never leaves your DC</td>
+              <td class="col-b">Depends on region + provider contracts</td></tr>
+            <tr><td class="rowlbl">Security control</td>
+              <td class="col-a">Full &mdash; you own the stack</td>
+              <td class="col-b">Shared responsibility model with the provider</td></tr>
+            <tr><td class="rowlbl">Long-run cost (steady load)</td>
+              <td class="col-a">Cheaper at high, sustained utilization</td>
+              <td class="col-b">Expensive if you run 24/7 at scale</td></tr>
+            <tr><td class="rowlbl">Best-fit workload</td>
+              <td class="col-a">Predictable, sensitive, or always-on training</td>
+              <td class="col-b">Bursty, experimental, or geographically distributed</td></tr>
+            <tr><td class="rowlbl">Hybrid</td>
+              <td class="col-a" colspan="2" style="text-align:center; color: var(--muted); font-style: italic;">Most enterprises land here &mdash; on-prem for steady state, cloud for burst and experimentation</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- Section 3: AI Operations -->
+<!-- ============================================================ -->
+<section class="chapter" id="ops" style="--tag: #A66A2C;">
+  <div class="chapter-head">
+    <div class="left">
+      <div class="num">Section 03</div>
+      <h2>AI Operations</h2>
+      <div class="blurb">The full section your screenshots skipped &mdash; 22% of the exam. Management, orchestration, GPU monitoring, virtualization.</div>
+    </div>
+    <div class="weight-pill">22%</div>
+  </div>
+  <div class="cards">
+
+    <!-- 3.1 Management & Monitoring -->
+    <article class="card">
+      <div class="card-head">
+        <div class="card-code"><span class="dot"></span>Topic 3.1</div>
+        <h3>Data center management &amp; monitoring essentials</h3>
+      </div>
+      <ul class="bullets">
+        <li><strong>NVIDIA Base Command</strong> &mdash; full-stack management for AI clusters: user access, dataset management, job scheduling, workload orchestration.</li>
+        <li><strong>Baseboard Management Controller (BMC)</strong> &mdash; dedicated micro-controller on the server board; provides <em>out-of-band</em> control via IPMI/Redfish for power on/off, thermal readings, remote console, firmware updates.</li>
+        <li><strong>Out-of-band management network</strong> &mdash; a physically separate network used only for BMC/lights-out control. Isolates admin traffic from data traffic; keeps you in when the primary network fails.</li>
+        <li><strong>In-band</strong> vs <strong>out-of-band</strong> &mdash; know the difference. In-band shares the data network; out-of-band uses a dedicated management network.</li>
+      </ul>
+      <div class="diagram">
+        <svg viewBox="0 0 380 190" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two network diagrams showing in-band vs out-of-band management">
+          <!-- Rack -->
+          <rect x="150" y="70" width="80" height="80" rx="4" fill="none" stroke="#A66A2C" stroke-width="1.5"/>
+          <text x="190" y="115" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="10" font-weight="700" fill="#A66A2C" letter-spacing="0.08em">SERVER</text>
+          <text x="190" y="130" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" fill="#5E6570">GPU + BMC</text>
+
+          <!-- In-band data network (top) -->
+          <path d="M45 40 L335 40" stroke="#3B4A5B" stroke-width="1.5" opacity="0.7"/>
+          <path d="M190 40 L190 70" stroke="#3B4A5B" stroke-width="1.5" opacity="0.7"/>
+          <text x="45" y="30" font-family="ui-monospace, Menlo, monospace" font-size="9" font-weight="700" fill="#3B4A5B" letter-spacing="0.08em">DATA NETWORK · IN-BAND</text>
+
+          <!-- Out-of-band mgmt network (bottom) -->
+          <path d="M45 175 L335 175" stroke="#A66A2C" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.9"/>
+          <path d="M190 150 L190 175" stroke="#A66A2C" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.9"/>
+          <text x="335" y="188" text-anchor="end" font-family="ui-monospace, Menlo, monospace" font-size="9" font-weight="700" fill="#A66A2C" letter-spacing="0.08em">OUT-OF-BAND · BMC / IPMI</text>
+        </svg>
+      </div>
+      <div class="diagram-cap">Two networks, two purposes</div>
+    </article>
+
+    <!-- 3.2 Orchestration & Scheduling -->
+    <article class="card">
+      <div class="card-head">
+        <div class="card-code"><span class="dot"></span>Topic 3.2</div>
+        <h3>Cluster orchestration &amp; job scheduling &mdash; Slurm vs Kubernetes</h3>
+      </div>
+      <ul class="bullets">
+        <li><strong>Slurm</strong> &mdash; the HPC batch workload manager. Submit jobs to a queue, partition into nodes, gang-schedule for MPI/multi-node training. Traditional HPC choice.</li>
+        <li><strong>Kubernetes (K8s)</strong> &mdash; container orchestration. Uses the <em>NVIDIA GPU Operator</em> to install drivers/toolkit/DCGM inside the cluster automatically.</li>
+        <li><strong>Containers (Docker)</strong> package model + deps + framework versions &mdash; portable, reproducible runs.</li>
+        <li><strong>Base Command Platform</strong> sits above these tools for end-to-end AI workflow orchestration.</li>
+        <li>Exam heuristic: HPC-style batch training → Slurm; production inference services / mixed workloads → Kubernetes.</li>
+      </ul>
+      <div class="diagram">
+        <svg viewBox="0 0 380 190" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Slurm queue vs Kubernetes pod grid">
+          <!-- Slurm side -->
+          <text x="95" y="20" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="11" font-weight="700" fill="#A66A2C" letter-spacing="0.1em">SLURM</text>
+          <g fill="#A66A2C" opacity="0.7">
+            <rect x="30" y="35" width="130" height="18" rx="3"/>
+            <rect x="30" y="58" width="130" height="18" rx="3"/>
+            <rect x="30" y="81" width="130" height="18" rx="3"/>
+            <rect x="30" y="104" width="130" height="18" rx="3"/>
+          </g>
+          <g fill="#FFF" opacity="0.9" font-family="ui-monospace, Menlo, monospace" font-size="9">
+            <text x="40" y="48">job #1 · train-gpt · 8 GPU · 24h</text>
+            <text x="40" y="71">job #2 · train-vit · 4 GPU · 12h</text>
+            <text x="40" y="94">job #3 · fine-tune · 2 GPU · 6h</text>
+            <text x="40" y="117">job #4 · eval · 1 GPU · 1h</text>
+          </g>
+          <text x="95" y="145" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#5E6570">Batch queue · gang scheduling</text>
+
+          <!-- K8s side -->
+          <text x="285" y="20" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="11" font-weight="700" fill="#A66A2C" letter-spacing="0.1em">KUBERNETES</text>
+          <g fill="#A66A2C" opacity="0.7">
+            <rect x="200" y="35" width="35" height="35" rx="3"/>
+            <rect x="240" y="35" width="35" height="35" rx="3"/>
+            <rect x="280" y="35" width="35" height="35" rx="3"/>
+            <rect x="320" y="35" width="35" height="35" rx="3"/>
+            <rect x="200" y="75" width="35" height="35" rx="3"/>
+            <rect x="240" y="75" width="35" height="35" rx="3"/>
+            <rect x="280" y="75" width="35" height="35" rx="3"/>
+            <rect x="320" y="75" width="35" height="35" rx="3"/>
+          </g>
+          <g fill="#FFF" opacity="0.9" font-family="ui-monospace, Menlo, monospace" font-size="8">
+            <text x="217" y="56" text-anchor="middle">POD</text>
+            <text x="257" y="56" text-anchor="middle">POD</text>
+            <text x="297" y="56" text-anchor="middle">POD</text>
+            <text x="337" y="56" text-anchor="middle">POD</text>
+            <text x="217" y="96" text-anchor="middle">POD</text>
+            <text x="257" y="96" text-anchor="middle">POD</text>
+            <text x="297" y="96" text-anchor="middle">POD</text>
+            <text x="337" y="96" text-anchor="middle">POD</text>
+          </g>
+          <text x="285" y="128" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#5E6570">Pods · GPU Operator</text>
+          <text x="285" y="145" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#5E6570">Long-running services</text>
+        </svg>
+      </div>
+      <div class="diagram-cap">Two orchestrators, two philosophies</div>
+    </article>
+
+    <!-- 3.3 GPU Monitoring -->
+    <article class="card">
+      <div class="card-head">
+        <div class="card-code"><span class="dot"></span>Topic 3.3</div>
+        <h3>GPU monitoring &mdash; DCGM and what to measure</h3>
+      </div>
+      <ul class="bullets">
+        <li><strong>NVIDIA DCGM</strong> (Data Center GPU Manager) is the standard tool. Exports metrics, runs diagnostics, integrates with Prometheus/Grafana.</li>
+        <li>Core metrics: <em>GPU utilization %</em>, <em>memory used/free</em>, <em>temperature</em>, <em>power draw (watts)</em>, <em>ECC errors</em>, <em>NVLink throughput</em>, <em>PCIe throughput</em>.</li>
+        <li><em>Low GPU utilization</em> is the classic complaint. Common causes: CPU-bottlenecked data loader, small batch size, I/O-bound pipeline, single-GPU code in a multi-GPU box, wrong precision, misconfigured MIG partitions.</li>
+        <li>DCGM ships with <em>dcgmi</em> CLI, a daemon, and Kubernetes/Prometheus exporters.</li>
+      </ul>
+      <div class="diagram">
+        <svg viewBox="0 0 380 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Mock GPU dashboard with utilization, memory, temperature, power">
+          <!-- 4 metric tiles -->
+          <g font-family="ui-monospace, Menlo, monospace">
+            <!-- Util -->
+            <rect x="15" y="15" width="170" height="80" rx="6" fill="#A66A2C" opacity="0.10" stroke="#A66A2C" stroke-width="1"/>
+            <text x="25" y="32" font-size="9" font-weight="700" fill="#A66A2C" letter-spacing="0.1em">GPU UTIL</text>
+            <text x="25" y="65" font-size="24" font-weight="700" fill="#A66A2C">87%</text>
+            <!-- bar -->
+            <rect x="25" y="75" width="150" height="4" rx="2" fill="#A66A2C" opacity="0.2"/>
+            <rect x="25" y="75" width="130" height="4" rx="2" fill="#A66A2C"/>
+
+            <rect x="195" y="15" width="170" height="80" rx="6" fill="#A66A2C" opacity="0.10" stroke="#A66A2C" stroke-width="1"/>
+            <text x="205" y="32" font-size="9" font-weight="700" fill="#A66A2C" letter-spacing="0.1em">MEM USED</text>
+            <text x="205" y="65" font-size="24" font-weight="700" fill="#A66A2C">62 / 80 GB</text>
+            <rect x="205" y="75" width="150" height="4" rx="2" fill="#A66A2C" opacity="0.2"/>
+            <rect x="205" y="75" width="116" height="4" rx="2" fill="#A66A2C"/>
+
+            <rect x="15" y="105" width="170" height="80" rx="6" fill="#A66A2C" opacity="0.10" stroke="#A66A2C" stroke-width="1"/>
+            <text x="25" y="122" font-size="9" font-weight="700" fill="#A66A2C" letter-spacing="0.1em">TEMP</text>
+            <text x="25" y="155" font-size="24" font-weight="700" fill="#A66A2C">71 °C</text>
+            <rect x="25" y="165" width="150" height="4" rx="2" fill="#A66A2C" opacity="0.2"/>
+            <rect x="25" y="165" width="80" height="4" rx="2" fill="#A66A2C"/>
+
+            <rect x="195" y="105" width="170" height="80" rx="6" fill="#A66A2C" opacity="0.10" stroke="#A66A2C" stroke-width="1"/>
+            <text x="205" y="122" font-size="9" font-weight="700" fill="#A66A2C" letter-spacing="0.1em">POWER</text>
+            <text x="205" y="155" font-size="24" font-weight="700" fill="#A66A2C">618 W</text>
+            <rect x="205" y="165" width="150" height="4" rx="2" fill="#A66A2C" opacity="0.2"/>
+            <rect x="205" y="165" width="128" height="4" rx="2" fill="#A66A2C"/>
+          </g>
+        </svg>
+      </div>
+      <div class="diagram-cap">Four metrics DCGM always shows first</div>
+    </article>
+
+    <!-- 3.4 Virtualization -->
+    <article class="card">
+      <div class="card-head">
+        <div class="card-code"><span class="dot"></span>Topic 3.4</div>
+        <h3>Virtualizing accelerated infrastructure &mdash; MIG · vGPU · Passthrough</h3>
+      </div>
+      <ul class="bullets">
+        <li><strong>MIG (Multi-Instance GPU)</strong> &mdash; <em>hardware</em> partitions one A100/H100 into up to 7 isolated GPU instances, each with dedicated compute + memory. Best for multi-tenant AI workloads that need real isolation.</li>
+        <li><strong>vGPU</strong> &mdash; <em>time-slices</em> a GPU across multiple VMs. Common for graphics/VDI. Different mechanism from MIG (software slicing vs hardware partition).</li>
+        <li><strong>Passthrough</strong> &mdash; assign a <em>whole</em> physical GPU to a single VM. Maximum performance, no sharing.</li>
+        <li>Exam trap: MIG is <em>hardware</em> isolation; vGPU is <em>time-sliced</em>. Different tools, different use cases.</li>
+      </ul>
+      <div class="diagram">
+        <svg viewBox="0 0 380 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three virtualization modes: MIG partitioned, vGPU time-sliced, passthrough whole">
+          <g font-family="ui-monospace, Menlo, monospace" font-size="9" font-weight="700" letter-spacing="0.08em">
+
+            <!-- MIG -->
+            <text x="65" y="20" text-anchor="middle" fill="#A66A2C">MIG</text>
+            <text x="65" y="180" text-anchor="middle" font-weight="400" font-family="system-ui, sans-serif" font-size="10" fill="#5E6570">Hardware partition</text>
+            <g fill="#A66A2C" opacity="0.75">
+              <rect x="20" y="30" width="40" height="45" rx="2"/>
+              <rect x="65" y="30" width="40" height="45" rx="2"/>
+              <rect x="20" y="80" width="40" height="45" rx="2"/>
+              <rect x="65" y="80" width="40" height="45" rx="2"/>
+              <rect x="20" y="130" width="85" height="30" rx="2"/>
+            </g>
+            <g fill="#FFF" opacity="0.85" font-size="8" letter-spacing="0.02em">
+              <text x="40" y="56" text-anchor="middle">GI-1</text>
+              <text x="85" y="56" text-anchor="middle">GI-2</text>
+              <text x="40" y="106" text-anchor="middle">GI-3</text>
+              <text x="85" y="106" text-anchor="middle">GI-4</text>
+              <text x="62.5" y="150" text-anchor="middle">GI-5</text>
+            </g>
+
+            <!-- vGPU -->
+            <text x="190" y="20" text-anchor="middle" fill="#A66A2C">vGPU</text>
+            <text x="190" y="180" text-anchor="middle" font-weight="400" font-family="system-ui, sans-serif" font-size="10" fill="#5E6570">Time-sliced</text>
+            <rect x="145" y="30" width="90" height="130" rx="3" fill="#A66A2C" opacity="0.75"/>
+            <g stroke="#FFF" stroke-width="1" opacity="0.85">
+              <line x1="145" y1="60" x2="235" y2="60"/>
+              <line x1="145" y1="95" x2="235" y2="95"/>
+              <line x1="145" y1="130" x2="235" y2="130"/>
+            </g>
+            <g fill="#FFF" opacity="0.85" font-size="8" letter-spacing="0.02em">
+              <text x="190" y="49" text-anchor="middle">VM-A</text>
+              <text x="190" y="82" text-anchor="middle">VM-B</text>
+              <text x="190" y="117" text-anchor="middle">VM-C</text>
+              <text x="190" y="150" text-anchor="middle">VM-D</text>
+            </g>
+
+            <!-- Passthrough -->
+            <text x="315" y="20" text-anchor="middle" fill="#A66A2C">PASSTHROUGH</text>
+            <text x="315" y="180" text-anchor="middle" font-weight="400" font-family="system-ui, sans-serif" font-size="10" fill="#5E6570">Whole GPU · 1 VM</text>
+            <rect x="270" y="30" width="90" height="130" rx="3" fill="#A66A2C" opacity="0.75"/>
+            <g fill="#FFF" opacity="0.9" font-size="10" letter-spacing="0.04em">
+              <text x="315" y="98" text-anchor="middle">VM-X</text>
+            </g>
+          </g>
+        </svg>
+      </div>
+      <div class="diagram-cap">Same GPU · three sharing models</div>
+    </article>
+
+  </div>
+</section>
+
+<footer class="foot">
+  <div>
+    <div class="mono" style="text-transform:uppercase; font-size:11px; letter-spacing:0.14em; color:var(--ink); margin-bottom:6px;">Study strategy</div>
+    Use Part 1 for the visual/hardware sections (Infrastructure especially), Part 2 for the concepts and Operations. The topic codes match the exam outline &mdash; when you see a code you're weak on, the card is your review.
+  </div>
+  <div class="mono">Part 2 · Companion guide · Diagrams built from outline + reading list</div>
+</footer>
+
+<script>
+  (function() {
+    const btn = document.getElementById("themeBtn");
+    const root = document.documentElement;
+    const saved = localStorage.getItem("aiio-theme");
+    if (saved === "dark" || saved === "light") root.setAttribute("data-theme", saved);
+    btn.addEventListener("click", () => {
+      const now = root.getAttribute("data-theme");
+      const media = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      const cur = now || media;
+      const next = cur === "dark" ? "light" : "dark";
+      root.setAttribute("data-theme", next);
+      localStorage.setItem("aiio-theme", next);
+    });
+  })();
+</script>
