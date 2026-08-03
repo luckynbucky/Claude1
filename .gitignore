@@ -3,3 +3,10 @@ dist
 .env
 .env.local
 *.log
+
+# Coursera downloader
+.coursera-cauth
+scripts/.venv/
+scripts/coursera-ml/
+coursera-ml/
+scripts/__pycache__/
