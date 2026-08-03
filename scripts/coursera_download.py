@@ -285,10 +285,17 @@ def download_notebook(
 
 ITEM_DISPATCH = {
     "lecture": "video",
+    "lectureVideo": "video",
     "supplement": "supp",
     "notebook": "notebook",
     "ungradedLab": "notebook",
     "programming": "notebook",
+    "programmingAssignment": "notebook",
+    "ungradedProgramming": "notebook",
+    "ungradedLabProject": "notebook",
+    "lab": "notebook",
+    "gradedLti": "notebook",
+    "ungradedLti": "notebook",
 }
 
 
@@ -300,15 +307,30 @@ def download_course(
 ) -> None:
     print(f"\n=== {slug} ===")
     course_id, items = fetch_course_materials(session, slug)
+    print(f"  courseId={course_id}  items={len(items)}")
+
+    type_counts: dict[str, int] = {}
+    for it in items:
+        type_counts[it.type] = type_counts.get(it.type, 0) + 1
+    print("  item types:", ", ".join(f"{t}={n}" for t, n in sorted(type_counts.items())))
+
+    unknown = {t for t in type_counts if t not in ITEM_DISPATCH}
+    if unknown:
+        print(f"  skipping unrecognized types: {sorted(unknown)}")
+
     course_dir = out_root / safe_name(slug)
     manual_log = course_dir / "notebooks-manual.txt"
 
+    handled = 0
     for item in items:
         kind = ITEM_DISPATCH.get(item.type)
         if kind is None or kind in skip:
             continue
+        if item.type != "lecture" and getattr(item, "type", None):
+            pass  # placeholder; per-item logging below
 
         module_dir = course_dir / f"{item.module_idx:02d} - {safe_name(item.module)}"
+        print(f"  [{item.type}] {item.module_idx:02d}.{item.lesson_idx:02d}.{item.item_idx:02d} {item.name[:60]}")
         try:
             if kind == "video":
                 download_lecture(session, course_id, item, module_dir)
@@ -317,10 +339,13 @@ def download_course(
             elif kind == "notebook":
                 module_dir.mkdir(parents=True, exist_ok=True)
                 download_notebook(session, course_id, item, module_dir, manual_log)
+            handled += 1
         except requests.HTTPError as e:
-            print(f"  ! {item.type} '{item.name}': {e}", file=sys.stderr)
+            print(f"    ! {item.type} '{item.name}': HTTP {e.response.status_code if e.response else '?'} {e}", file=sys.stderr)
         except Exception as e:
-            print(f"  ! {item.type} '{item.name}': {e!r}", file=sys.stderr)
+            print(f"    ! {item.type} '{item.name}': {e!r}", file=sys.stderr)
+
+    print(f"  processed {handled} items")
 
 
 def main(argv: Iterable[str] | None = None) -> int:
