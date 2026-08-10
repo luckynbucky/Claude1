@@ -52,7 +52,7 @@ USER_AGENT = (
 MATERIALS_FIELDS = (
     "moduleIds,"
     "onDemandCourseMaterialModules.v1(name,slug,lessonIds),"
-    "onDemandCourseMaterialLessons.v1(name,slug,elementIds),"
+    "onDemandCourseMaterialLessons.v1(name,slug,itemIds),"
     "onDemandCourseMaterialItems.v2(name,slug,contentSummary,isLocked)"
 )
 
@@ -144,7 +144,8 @@ def fetch_course_materials(
         module = modules[module_id]
         for l_idx, lesson_id in enumerate(module["lessonIds"], start=1):
             lesson = lessons[lesson_id]
-            for i_idx, item_id in enumerate(lesson["elementIds"], start=1):
+            # itemIds are bare (e.g. "iYR2y"); elementIds prepend "item~".
+            for i_idx, item_id in enumerate(lesson.get("itemIds") or [], start=1):
                 item = items.get(item_id)
                 if item is None:
                     continue
