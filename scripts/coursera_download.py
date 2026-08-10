@@ -104,7 +104,9 @@ def get_json(session: requests.Session, url: str) -> dict:
     return r.json()
 
 
-def fetch_course_materials(session: requests.Session, slug: str) -> tuple[str, list[Item]]:
+def fetch_course_materials(
+    session: requests.Session, slug: str, debug_dir: Path | None = None
+) -> tuple[str, list[Item]]:
     url = (
         f"{BASE}/api/onDemandCourseMaterials.v2/"
         f"?q=slug&slug={slug}"
@@ -112,13 +114,30 @@ def fetch_course_materials(session: requests.Session, slug: str) -> tuple[str, l
         f"&fields={MATERIALS_FIELDS}"
     )
     data = get_json(session, url)
+    if debug_dir is not None:
+        debug_dir.mkdir(parents=True, exist_ok=True)
+        (debug_dir / f"{slug}-materials.json").write_text(json.dumps(data, indent=2))
+        print(f"  [debug] wrote {debug_dir / f'{slug}-materials.json'}")
+
     element = data["elements"][0]
     course_id = element["id"]
-    linked = data["linked"]
+    linked = data.get("linked") or {}
 
-    modules = {m["id"]: m for m in linked["onDemandCourseMaterialModules.v1"]}
-    lessons = {l["id"]: l for l in linked["onDemandCourseMaterialLessons.v1"]}
-    items = {i["id"]: i for i in linked["onDemandCourseMaterialItems.v2"]}
+    modules_list = linked.get("onDemandCourseMaterialModules.v1") or []
+    lessons_list = linked.get("onDemandCourseMaterialLessons.v1") or []
+    items_list = linked.get("onDemandCourseMaterialItems.v2") or []
+    print(
+        f"  [linked] modules={len(modules_list)} "
+        f"lessons={len(lessons_list)} items={len(items_list)} "
+        f"element.moduleIds={len(element.get('moduleIds') or [])}"
+    )
+    if not items_list:
+        print("  [hint] no items in response. Check the JSON dumped with --debug — "
+              "usually means the session cookie can't see this course's content.")
+
+    modules = {m["id"]: m for m in modules_list}
+    lessons = {l["id"]: l for l in lessons_list}
+    items = {i["id"]: i for i in items_list}
 
     ordered: list[Item] = []
     for m_idx, module_id in enumerate(element["moduleIds"], start=1):
@@ -304,9 +323,10 @@ def download_course(
     slug: str,
     out_root: Path,
     skip: set[str],
+    debug_dir: Path | None = None,
 ) -> None:
     print(f"\n=== {slug} ===")
-    course_id, items = fetch_course_materials(session, slug)
+    course_id, items = fetch_course_materials(session, slug, debug_dir=debug_dir)
     print(f"  courseId={course_id}  items={len(items)}")
 
     type_counts: dict[str, int] = {}
@@ -364,16 +384,22 @@ def main(argv: Iterable[str] | None = None) -> int:
         default=[],
         help="Content types to skip (repeatable).",
     )
+    p.add_argument(
+        "--debug",
+        action="store_true",
+        help="Dump the raw materials API response for each course to ./debug/.",
+    )
     args = p.parse_args(list(argv) if argv is not None else None)
 
     cauth = load_cauth(args.cauth)
     session = make_session(cauth)
     courses = args.course or SPECIALIZATION_SLUGS
     args.out.mkdir(parents=True, exist_ok=True)
+    debug_dir = Path("./debug") if args.debug else None
 
     for slug in courses:
         try:
-            download_course(session, slug, args.out, set(args.skip))
+            download_course(session, slug, args.out, set(args.skip), debug_dir=debug_dir)
         except requests.HTTPError as e:
             print(f"skipping {slug}: {e}", file=sys.stderr)
 
