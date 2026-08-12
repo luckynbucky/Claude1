@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import Anthropic from "@anthropic-ai/sdk";
 import { PHENOMENEX_CONTEXT } from "./phenomenexContext.js";
 import { getNews } from "./newsService.js";
+import { getRegulatoryNews } from "./regulatorySearch.js";
 import { resolveProteinStructure } from "./proteinService.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -20,6 +21,11 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 app.use(express.json({ limit: "1mb" }));
 
+// Completed analyses are memoized by headline+snippet so re-opening a card,
+// duplicate items, or repeat "Analyze All" passes never re-pay for the call.
+const analysisCache = new Map();
+const ANALYSIS_CACHE_MAX = 500;
+
 app.post("/api/analyze", async (req, res) => {
   const { headline, source, date, snippet } = req.body || {};
 
@@ -27,11 +33,18 @@ app.post("/api/analyze", async (req, res) => {
     return res.status(400).json({ error: "headline is required" });
   }
 
+  const cacheKey = `${headline}::${snippet || ""}`;
+  if (analysisCache.has(cacheKey)) {
+    return res.json(analysisCache.get(cacheKey));
+  }
+
   try {
     const message = await anthropic.messages.create({
       model: "claude-sonnet-5",
       max_tokens: 1800,
-      system: PHENOMENEX_CONTEXT,
+      // cache_control: the large product-context prompt is billed at ~10% of
+      // input price on cache hits, which "Analyze All" bursts benefit from.
+      system: [{ type: "text", text: PHENOMENEX_CONTEXT, cache_control: { type: "ephemeral" } }],
       messages: [
         {
           role: "user",
@@ -43,6 +56,11 @@ app.post("/api/analyze", async (req, res) => {
     const text = message.content?.map((b) => b.text || "").join("") || "";
     const clean = text.replace(/```json|```/g, "").trim();
     const parsed = JSON.parse(clean);
+
+    if (analysisCache.size >= ANALYSIS_CACHE_MAX) {
+      analysisCache.delete(analysisCache.keys().next().value);
+    }
+    analysisCache.set(cacheKey, parsed);
 
     res.json(parsed);
   } catch (err) {
@@ -59,6 +77,16 @@ app.get("/api/news", async (req, res) => {
   } catch (err) {
     console.error("News fetch failed:", err.message);
     res.status(502).json({ error: "Couldn't load live news. Please try again.", items: [], errors: [] });
+  }
+});
+
+app.get("/api/regulatory", async (req, res) => {
+  try {
+    const result = await getRegulatoryNews({});
+    res.json(result);
+  } catch (err) {
+    console.error("Regulatory news failed:", err.message);
+    res.status(502).json({ error: "Regulatory scan failed.", items: [] });
   }
 });
 

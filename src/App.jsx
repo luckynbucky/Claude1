@@ -289,6 +289,8 @@ export default function App() {
   const [newsError, setNewsError] = useState(null);
   const [feedErrors, setFeedErrors] = useState([]);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [regulatoryItems, setRegulatoryItems] = useState([]);
+  const [regLoading, setRegLoading] = useState(true);
 
   const fetchNews = useCallback(async (force = false) => {
     setNewsLoading(true);
@@ -314,9 +316,27 @@ export default function App() {
     }
   }, []);
 
+  // Runs in parallel with the RSS fetch so the feed renders immediately;
+  // FDA/regulatory results merge in whenever the (server-cached) scan returns.
+  const fetchRegulatory = useCallback(async () => {
+    setRegLoading(true);
+    try {
+      const response = await fetch("/api/regulatory");
+      if (response.ok) {
+        const data = await response.json();
+        setRegulatoryItems(data.items || []);
+      }
+    } catch (err) {
+      console.error("Regulatory fetch failed:", err);
+    } finally {
+      setRegLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchNews();
-  }, [fetchNews]);
+    fetchRegulatory();
+  }, [fetchNews, fetchRegulatory]);
 
   const analyzeNewsItem = async (item) => {
     setLoadingId(item.id);
@@ -349,9 +369,23 @@ export default function App() {
     }
   };
 
+  // RSS and regulatory results arrive independently; merge, dedupe, and
+  // re-sort them here so the feed is one chronological stream.
+  // Dedupe by headline, not link: distinct regulatory stories often cite the
+  // same aggregator landing page, while true dupes repeat the headline.
+  const seenKeys = new Set();
+  const feedItems = [...newsItems, ...regulatoryItems]
+    .filter(item => {
+      const key = item.headline || item.link || item.id;
+      if (seenKeys.has(key)) return false;
+      seenKeys.add(key);
+      return true;
+    })
+    .sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+
   const handleAnalyzeAll = async () => {
     setAnalyzeAll(true);
-    for (const item of newsItems.slice(0, visibleCount)) {
+    for (const item of feedItems.slice(0, visibleCount)) {
       if (!analyses[item.id]) {
         await analyzeNewsItem(item);
         await new Promise(r => setTimeout(r, 500));
@@ -365,10 +399,10 @@ export default function App() {
     await analyzeNewsItem(item);
   };
 
-  const allNews = [...customNews, ...newsItems];
+  const allNews = [...customNews, ...feedItems];
   const analyzedCount = Object.keys(analyses).length;
   const highOppCount = Object.values(analyses).filter(a => a.opportunity_score >= 7).length;
-  const visibleNewsItems = newsItems.slice(0, visibleCount);
+  const visibleNewsItems = feedItems.slice(0, visibleCount);
   const visibleAnalyzedCount = visibleNewsItems.filter(item => analyses[item.id]).length;
 
   return (
@@ -530,7 +564,18 @@ export default function App() {
           </div>
         )}
 
-        {activeTab === "feed" && newsLoading && newsItems.length === 0 && !newsError && (
+        {activeTab === "feed" && regLoading && (
+          <div style={{
+            display: "flex", alignItems: "center", gap: 10, marginBottom: 16,
+            padding: "8px 14px", background: "#0f0f1e", border: "1px solid #1e293b",
+            borderRadius: 10, color: "#64748b", fontSize: 12, fontFamily: "'DM Mono', monospace"
+          }}>
+            <LoadingDots />
+            Scanning the web for FDA approvals &amp; filings — headlines below are live, results will merge in shortly
+          </div>
+        )}
+
+        {activeTab === "feed" && newsLoading && feedItems.length === 0 && !newsError && (
           <div style={{ textAlign: "center", padding: "60px 20px", color: "#64748b" }}>
             <LoadingDots />
             <p style={{ fontSize: 14, fontFamily: "'DM Mono', monospace", marginTop: 8 }}>Loading live biopharma news…</p>
@@ -538,7 +583,7 @@ export default function App() {
         )}
 
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          {(activeTab === "feed" ? newsItems.slice(0, visibleCount) : customNews).map(item => (
+          {(activeTab === "feed" ? visibleNewsItems : customNews).map(item => (
             <NewsCard
               key={item.id}
               item={item}
@@ -547,14 +592,14 @@ export default function App() {
               loading={loadingId === item.id}
             />
           ))}
-          {activeTab === "feed" && visibleCount < newsItems.length && (
+          {activeTab === "feed" && visibleCount < feedItems.length && (
             <button onClick={() => setVisibleCount(v => v + PAGE_SIZE)} style={{
               background: "transparent", color: "#e8927c", fontWeight: 600,
               fontSize: 13, padding: "12px 24px", borderRadius: 10,
               border: "1px solid #e8927c33", cursor: "pointer",
               fontFamily: "'Space Grotesk', sans-serif", alignSelf: "center", marginTop: 4
             }}>
-              Load More ({newsItems.length - visibleCount} more available)
+              Load More ({feedItems.length - visibleCount} more available)
             </button>
           )}
           {activeTab === "custom" && customNews.length === 0 && (
@@ -565,7 +610,7 @@ export default function App() {
               <p style={{ fontSize: 13, fontFamily: "'DM Mono', monospace", marginTop: 8 }}>The AI will analyze the science and match Phenomenex products</p>
             </div>
           )}
-          {activeTab === "feed" && !newsLoading && !newsError && newsItems.length === 0 && feedErrors.length === 0 && (
+          {activeTab === "feed" && !newsLoading && !newsError && feedItems.length === 0 && feedErrors.length === 0 && (
             <div style={{
               textAlign: "center", padding: "60px 20px", color: "#475569"
             }}>

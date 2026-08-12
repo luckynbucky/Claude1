@@ -19,15 +19,26 @@ Respond ONLY with a JSON array (no markdown, no backticks) of up to 10 items usi
 ]
 If you find nothing genuinely recent and relevant, respond with [].`;
 
-const CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+const CACHE_TTL_MS = 12 * 60 * 60 * 1000;
 let cache = { items: [], error: null, fetchedAt: 0 };
+let inFlight = null;
 
-export async function getRegulatoryNews({ force = false, client, model = "claude-sonnet-5" } = {}) {
+export async function getRegulatoryNews({ force = false, client, model = "claude-haiku-4-5-20251001" } = {}) {
   const isFresh = Date.now() - cache.fetchedAt < CACHE_TTL_MS;
   if (!force && isFresh) {
     return cache;
   }
 
+  // Coalesce concurrent callers onto one API call - multiple browser tabs or
+  // rapid refreshes must never each pay for their own web-search run.
+  if (inFlight) return inFlight;
+  inFlight = runSearch({ client, model }).finally(() => {
+    inFlight = null;
+  });
+  return inFlight;
+}
+
+async function runSearch({ client, model }) {
   const anthropic = client || new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
   try {
@@ -35,7 +46,7 @@ export async function getRegulatoryNews({ force = false, client, model = "claude
       model,
       max_tokens: 4096,
       system: REGULATORY_SYSTEM,
-      tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 6 }],
+      tools: [{ type: "web_search_20250305", name: "web_search", max_uses: 3 }],
       messages: [{ role: "user", content: "Find recent FDA approvals, filings, and major trial milestones as described. Respond with the JSON array only, as your final message." }],
     });
 
@@ -52,8 +63,11 @@ export async function getRegulatoryNews({ force = false, client, model = "claude
     }
     const parsed = JSON.parse(jsonMatch[0]);
 
+    // id is headline-based, not link-based: multiple distinct stories often
+    // cite the same aggregator page (e.g. drugs.com/newdrugs.html), and ids
+    // must stay unique per story and stable across cache refreshes.
     const items = parsed.map((item, i) => ({
-      id: item.link || `regulatory-${Date.now()}-${i}`,
+      id: `reg::${item.headline || i}`,
       headline: item.headline || "(untitled)",
       source: item.source || "Regulatory Search",
       date: item.date || null,

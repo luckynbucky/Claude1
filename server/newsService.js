@@ -1,7 +1,6 @@
 import Parser from "rss-parser";
 import { NEWS_FEEDS } from "./newsFeeds.js";
 import { filterRelevantItems } from "./relevanceFilter.js";
-import { getRegulatoryNews } from "./regulatorySearch.js";
 
 const parser = new Parser({
   timeout: 10000,
@@ -67,26 +66,11 @@ export async function getNews({ force = false, feeds = NEWS_FEEDS, limit = 150 }
     }
   });
 
+  // Regulatory web search is served by its own /api/regulatory endpoint so a
+  // feed load never waits on it (or pays for it) - merged client-side.
   const dedupedRss = dedupeSorted(items).map(({ _sortDate, ...rest }) => rest);
-  const relevantRss = await filterRelevantItems(dedupedRss);
+  const relevantRss = (await filterRelevantItems(dedupedRss)).slice(0, limit);
 
-  // Regulatory search has its own long-lived cache and refreshes on its own
-  // schedule, independent of manual "Refresh Feed" clicks on the RSS pool,
-  // since it's a much more expensive call.
-  const regulatory = await getRegulatoryNews({});
-  if (regulatory.error) {
-    errors.push({ source: "Regulatory Search", message: regulatory.error });
-  }
-
-  const combined = dedupeSorted(
-    [...relevantRss, ...regulatory.items].map((item) => ({
-      ...item,
-      _sortDate: item.date ? new Date(item.date).getTime() : 0,
-    }))
-  )
-    .slice(0, limit)
-    .map(({ _sortDate, ...rest }) => rest);
-
-  cache = { items: combined, errors, fetchedAt: Date.now() };
+  cache = { items: relevantRss, errors, fetchedAt: Date.now() };
   return cache;
 }
