@@ -120,14 +120,14 @@ terminal (web console or SSH):
 
 ```bash
 cd /workspace
-git clone https://github.com/luckynbucky/claude1.git   # private repo: use a PAT as the password
-bash claude1/runpod/drakes/setup_dna.sh
+git clone https://github.com/luckynbucky/Claude1.git
+bash Claude1/runpod/drakes/setup_dna.sh
 ```
 
-If cloning a private repo from the pod is more hassle than it is worth, the kit
-is only four files — `scp` them over, or paste them into the pod's editor, and
-run `setup_dna.sh` from wherever they land. The script locates its siblings
-relative to itself, so any directory works.
+The repo is public, so this needs no credentials. If you would rather not clone
+it, the kit is only four files — `scp` them over, use `runpodctl send`, or paste
+them into the pod's editor. `setup_dna.sh` locates its siblings relative to
+itself, so any directory works.
 
 The script installs Miniconda, creates the `sedd` environment on python 3.9.18,
 installs torch 2.3.1+cu121 and the DRAKES dependencies, clones DRAKES, installs
