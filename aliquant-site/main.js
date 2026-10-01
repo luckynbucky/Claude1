@@ -2,7 +2,7 @@
 // Site config — edit these to point at your real accounts and endpoints.
 // ---------------------------------------------------------------------------
 const CONFIG = {
-  substackUrl: "https://YOUR-HANDLE.substack.com",
+  substackUrl: "https://aliquant.substack.com",
   modelRepoUrl: "https://github.com/luckynbucky",
   modelCardUrl: "#",
   // Leave empty until you deploy an inference endpoint (see README.md).

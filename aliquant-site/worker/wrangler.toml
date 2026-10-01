@@ -5,7 +5,7 @@ compatibility_date = "2026-01-01"
 # --- Edit these before deploying -------------------------------------------
 [vars]
 # Your Substack, no trailing slash. The Worker fetches <SUBSTACK_URL>/feed.
-SUBSTACK_URL = "https://YOUR-HANDLE.substack.com"
+SUBSTACK_URL = "https://aliquant.substack.com"
 
 # Lock this to your domain in production so only your site can call the Worker.
 # Use "*" while testing from localhost.
