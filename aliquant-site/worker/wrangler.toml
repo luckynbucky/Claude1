@@ -1,0 +1,22 @@
+name = "aliquant-posts"
+main = "src/index.js"
+compatibility_date = "2026-01-01"
+
+# --- Edit these before deploying -------------------------------------------
+[vars]
+# Your Substack, no trailing slash. The Worker fetches <SUBSTACK_URL>/feed.
+SUBSTACK_URL = "https://YOUR-HANDLE.substack.com"
+
+# Lock this to your domain in production so only your site can call the Worker.
+# Use "*" while testing from localhost.
+ALLOWED_ORIGIN = "*"
+
+# How many posts to return.
+MAX_POSTS = "6"
+# ---------------------------------------------------------------------------
+
+# Optional: serve the Worker from a custom route like api.aliquant.bio once the
+# domain's DNS is on Cloudflare. Uncomment and set your zone.
+# [[routes]]
+# pattern = "api.aliquant.bio/api/*"
+# zone_name = "aliquant.bio"

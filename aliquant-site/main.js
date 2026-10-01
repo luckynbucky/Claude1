@@ -8,6 +8,10 @@ const CONFIG = {
   // Leave empty until you deploy an inference endpoint (see README.md).
   // The form then shows a demo response instead of calling the network.
   predictEndpoint: "",
+  // Your deployed Substack-feed Worker (see worker/README.md). When set, the
+  // Writing section loads live posts; on any error it falls back to POSTS below.
+  // e.g. "https://aliquant-posts.YOUR-SUBDOMAIN.workers.dev/api/posts"
+  postsEndpoint: "",
 };
 
 // Pipeline programs. `stage` runs 0–4: 1 = Target ID, 2 = Hit discovery,
@@ -52,13 +56,27 @@ new IntersectionObserver((entries, obs) => {
   obs.disconnect();
 }, { threshold: 0.3 }).observe(rows);
 
-// Substack post cards.
-document.getElementById("posts").innerHTML = POSTS.map((p) => `
-  <a class="card post" href="${CONFIG.substackUrl}" target="_blank" rel="noopener">
-    <time>${escapeHtml(p.date)}</time>
-    <h3>${escapeHtml(p.title)}</h3>
-    <p>${escapeHtml(p.blurb)}</p>
-  </a>`).join("");
+// Substack post cards. Renders the static POSTS immediately, then upgrades to
+// live posts from the Worker if postsEndpoint is configured and reachable.
+const postsEl = document.getElementById("posts");
+function renderPosts(list) {
+  postsEl.innerHTML = list.map((p) => `
+    <a class="card post" href="${escapeHtml(p.link || CONFIG.substackUrl)}" target="_blank" rel="noopener">
+      <time>${escapeHtml(p.date)}</time>
+      <h3>${escapeHtml(p.title)}</h3>
+      <p>${escapeHtml(p.blurb)}</p>
+    </a>`).join("");
+}
+renderPosts(POSTS);
+
+if (CONFIG.postsEndpoint) {
+  fetch(CONFIG.postsEndpoint)
+    .then((r) => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
+    .then((data) => {
+      if (Array.isArray(data.posts) && data.posts.length) renderPosts(data.posts);
+    })
+    .catch((err) => console.warn("Live posts unavailable, using fallback:", err.message));
+}
 
 // Typed agent log in the hero. Illustrative only.
 const LOG = [
