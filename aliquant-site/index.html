@@ -34,6 +34,55 @@
     </div>
   </header>
 
+  <!-- Soft, decorative bio background: DNA helices + molecules, drifting. -->
+  <div class="bio-bg" aria-hidden="true">
+    <svg class="bio bio-helix h1" viewBox="0 0 120 460" fill="none">
+      <path d="M60 0 C110 57 110 115 60 172 C10 230 10 287 60 345 C110 402 110 460 60 460"
+            stroke="url(#g1)" stroke-width="3"/>
+      <path d="M60 0 C10 57 10 115 60 172 C110 230 110 287 60 345 C10 402 10 460 60 460"
+            stroke="url(#g1)" stroke-width="3"/>
+      <g stroke="url(#g1)" stroke-width="2">
+        <line x1="42" y1="29" x2="78" y2="29"/><line x1="30" y1="57" x2="90" y2="57"/>
+        <line x1="42" y1="86" x2="78" y2="86"/><line x1="30" y1="115" x2="90" y2="115"/>
+        <line x1="42" y1="143" x2="78" y2="143"/><line x1="30" y1="172" x2="90" y2="172"/>
+        <line x1="42" y1="201" x2="78" y2="201"/><line x1="30" y1="230" x2="90" y2="230"/>
+        <line x1="42" y1="258" x2="78" y2="258"/><line x1="30" y1="287" x2="90" y2="287"/>
+        <line x1="42" y1="316" x2="78" y2="316"/><line x1="30" y1="345" x2="90" y2="345"/>
+        <line x1="42" y1="373" x2="78" y2="373"/><line x1="30" y1="402" x2="90" y2="402"/>
+      </g>
+      <defs>
+        <linearGradient id="g1" x1="0" y1="0" x2="0" y2="460" gradientUnits="userSpaceOnUse">
+          <stop stop-color="var(--accent)"/><stop offset="1" stop-color="var(--accent-2)"/>
+        </linearGradient>
+      </defs>
+    </svg>
+
+    <svg class="bio bio-helix h2" viewBox="0 0 120 460" fill="none">
+      <path d="M60 0 C110 57 110 115 60 172 C10 230 10 287 60 345 C110 402 110 460 60 460" stroke="url(#g1)" stroke-width="3"/>
+      <path d="M60 0 C10 57 10 115 60 172 C110 230 110 287 60 345 C10 402 10 460 60 460" stroke="url(#g1)" stroke-width="3"/>
+    </svg>
+
+    <svg class="bio bio-mol m1" viewBox="0 0 120 120" fill="none" stroke="var(--accent)" stroke-width="2.5">
+      <polygon points="60,16 98,38 98,82 60,104 22,82 22,38"/>
+      <polygon points="60,32 84,46 84,74 60,88 36,74 36,46" opacity="0.5"/>
+      <circle cx="60" cy="16" r="5" fill="var(--accent)"/><circle cx="98" cy="82" r="5" fill="var(--accent)"/>
+      <circle cx="22" cy="82" r="5" fill="var(--accent)"/>
+    </svg>
+
+    <svg class="bio bio-mol m2" viewBox="0 0 140 110" fill="none" stroke="var(--accent-2)" stroke-width="2.5">
+      <line x1="20" y1="55" x2="55" y2="30"/><line x1="55" y1="30" x2="90" y2="55"/>
+      <line x1="90" y1="55" x2="125" y2="30"/><line x1="55" y1="30" x2="55" y2="80"/>
+      <circle cx="20" cy="55" r="7" fill="var(--accent-2)"/><circle cx="55" cy="30" r="7" fill="var(--accent-2)"/>
+      <circle cx="90" cy="55" r="7" fill="var(--accent-2)"/><circle cx="125" cy="30" r="7" fill="var(--accent-2)"/>
+      <circle cx="55" cy="80" r="7" fill="var(--accent-2)"/>
+    </svg>
+
+    <svg class="bio bio-mol m3" viewBox="0 0 120 120" fill="none" stroke="var(--accent)" stroke-width="2.5">
+      <polygon points="60,16 98,38 98,82 60,104 22,82 22,38"/>
+      <circle cx="60" cy="16" r="5" fill="var(--accent)"/><circle cx="60" cy="104" r="5" fill="var(--accent)"/>
+    </svg>
+  </div>
+
   <main id="top">
     <!-- HERO -->
     <section class="hero">
