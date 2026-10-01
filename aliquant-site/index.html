@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aliquant Bio</title>
+  <meta name="description" content="Aliquant Bio — the first fully agentic computational biotechnology company. AI agents designing antivirals for hand, foot & mouth disease." />
+  <meta property="og:title" content="Aliquant Bio" />
+  <meta property="og:description" content="The first fully agentic computational biotechnology company." />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="nav">
+    <div class="wrap nav-inner">
+      <a href="#top" class="brand" aria-label="Aliquant Bio home">
+        <svg class="logo" viewBox="0 0 32 32" aria-hidden="true">
+          <path d="M16 3 C16 3 6 14 6 20 a10 10 0 0 0 20 0 C26 14 16 3 16 3Z" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="M9 21 h14" stroke="var(--accent)" stroke-width="2"/>
+          <path d="M10.5 25 h11" stroke="var(--accent-2)" stroke-width="2"/>
+        </svg>
+        <span>Aliquant<span class="muted">.bio</span></span>
+      </a>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="#platform">Platform</a>
+        <a href="#pipeline">Pipeline</a>
+        <a href="#model">Model</a>
+        <a href="#writing">Writing</a>
+        <a href="#contact" class="btn btn-small">Get in touch</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- HERO -->
+    <section class="hero">
+      <canvas id="network" aria-hidden="true"></canvas>
+      <div class="wrap hero-grid">
+        <div>
+          <p class="eyebrow"><span class="dot"></span> Computational biotech, run by agents</p>
+          <h1>The first fully <span class="grad">agentic</span> computational biotechnology company.</h1>
+          <p class="lede">
+            Aliquant Bio deploys autonomous AI agents that read the literature, pick targets,
+            design molecules and run in-silico experiments — starting with antivirals for
+            hand, foot &amp; mouth disease in young children.
+          </p>
+          <div class="cta-row">
+            <a href="#pipeline" class="btn">See the HFMD pipeline</a>
+            <a href="#writing" class="btn btn-ghost">Read the Substack →</a>
+          </div>
+        </div>
+
+        <div class="terminal" aria-label="Example agent activity log">
+          <div class="term-bar"><span></span><span></span><span></span><em>agent-orchestrator</em></div>
+          <pre id="agent-log"></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- STATS -->
+    <section class="stats wrap">
+      <div><strong>0</strong><span>approved antivirals for HFMD in the US or EU</span></div>
+      <div><strong>&lt;5 yrs</strong><span>the age group most affected</span></div>
+      <div><strong>EV‑A71</strong><span>serotype behind most severe neurological cases</span></div>
+      <div><strong>24/7</strong><span>agents iterating on design–test cycles</span></div>
+    </section>
+
+    <!-- PLATFORM -->
+    <section id="platform" class="section wrap">
+      <p class="eyebrow">Platform</p>
+      <h2>An autonomous design–make–test loop, in silico.</h2>
+      <p class="section-lede">Specialised agents hand work to each other, with every decision logged and reviewable by a human.</p>
+      <ol class="steps">
+        <li>
+          <span class="step-num">01</span>
+          <h3>Read</h3>
+          <p>Literature agents mine papers, patents and structural databases to map what is known about each viral target.</p>
+        </li>
+        <li>
+          <span class="step-num">02</span>
+          <h3>Hypothesise</h3>
+          <p>Reasoning agents rank targets and binding pockets, and propose what to test next and why.</p>
+        </li>
+        <li>
+          <span class="step-num">03</span>
+          <h3>Design</h3>
+          <p>Generative and ML scoring models propose, filter and optimise candidate molecules.</p>
+        </li>
+        <li>
+          <span class="step-num">04</span>
+          <h3>Validate</h3>
+          <p>Docking, ADMET prediction and critique agents stress-test candidates before anything reaches a wet lab.</p>
+        </li>
+      </ol>
+    </section>
+
+    <!-- PIPELINE -->
+    <section id="pipeline" class="section wrap">
+      <p class="eyebrow">Pipeline</p>
+      <h2>Hand, foot &amp; mouth disease.</h2>
+      <p class="section-lede">
+        HFMD causes large seasonal outbreaks among young children, especially across the Asia‑Pacific region.
+        Most cases are mild, but enterovirus A71 can cause severe neurological disease — and there is still no
+        approved antiviral treatment. That is the gap we are going after first.
+      </p>
+      <div class="pipeline" role="table" aria-label="Drug development pipeline">
+        <div class="pipe-head" role="row">
+          <span role="columnheader">Program</span>
+          <span role="columnheader">Target</span>
+          <span role="columnheader" class="stages-head">
+            <span>Target ID</span><span>Hit discovery</span><span>Lead opt.</span><span>Preclinical</span>
+          </span>
+        </div>
+        <div id="pipeline-rows"></div>
+      </div>
+      <p class="fineprint">Programs shown are placeholders — edit the <code>PIPELINE</code> list in <code>main.js</code>.</p>
+    </section>
+
+    <!-- MODEL -->
+    <section id="model" class="section wrap model-grid">
+      <div>
+        <p class="eyebrow">Machine learning</p>
+        <h2>Our model.</h2>
+        <p class="section-lede">
+          A short description of what your model predicts, what it was trained on, and why it matters for
+          the pipeline. Replace this paragraph with your own summary.
+        </p>
+        <ul class="metrics">
+          <li><strong>—</strong><span>ROC‑AUC</span></li>
+          <li><strong>—</strong><span>Training compounds</span></li>
+          <li><strong>—</strong><span>Inference time</span></li>
+        </ul>
+        <div class="cta-row">
+          <a href="#" class="btn btn-ghost" id="model-repo-link">View on GitHub →</a>
+          <a href="#" class="btn btn-ghost" id="model-paper-link">Model card →</a>
+        </div>
+      </div>
+
+      <form class="card demo" id="predict-form">
+        <h3>Try it</h3>
+        <label for="smiles">Molecule (SMILES)</label>
+        <input id="smiles" name="smiles" autocomplete="off" spellcheck="false"
+               value="CC(=O)Oc1ccccc1C(=O)O" />
+        <button class="btn" type="submit">Predict</button>
+        <pre id="predict-out" class="demo-out">Results appear here.</pre>
+      </form>
+    </section>
+
+    <!-- WRITING -->
+    <section id="writing" class="section wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Writing</p>
+          <h2>Notes from the lab that isn't a lab.</h2>
+        </div>
+        <a href="#" class="btn btn-ghost substack-link">All posts on Substack →</a>
+      </div>
+      <div class="posts" id="posts"></div>
+      <div class="card subscribe">
+        <div>
+          <h3>Follow along</h3>
+          <p>New essays on agentic science, ML for drug discovery and the HFMD program.</p>
+        </div>
+        <a href="#" class="btn substack-link">Subscribe on Substack</a>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact" class="section wrap contact">
+      <h2>Collaborate with Aliquant.</h2>
+      <p class="section-lede">Wet-lab partners, clinicians working on paediatric enteroviruses, and investors — we'd love to hear from you.</p>
+      <a class="btn" href="mailto:hello@aliquant.bio">hello@aliquant.bio</a>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <span>© <span id="year"></span> Aliquant Bio</span>
+      <span class="muted">Computational research only. Nothing here is medical advice.</span>
+    </div>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html>
