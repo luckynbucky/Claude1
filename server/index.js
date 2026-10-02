@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express from "express";
+import crypto from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import Anthropic from "@anthropic-ai/sdk";
@@ -19,6 +20,22 @@ if (!process.env.ANTHROPIC_API_KEY) {
 }
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+// Optional site-wide password (HTTP Basic Auth). Set APP_PASSWORD when the
+// app is publicly hosted so strangers can't spend the Anthropic API budget.
+// Any username works; only the password is checked.
+if (process.env.APP_PASSWORD) {
+  const expected = Buffer.from(process.env.APP_PASSWORD);
+  app.use((req, res, next) => {
+    const [scheme, encoded] = (req.headers.authorization || "").split(" ");
+    const password = scheme === "Basic" && encoded
+      ? Buffer.from(encoded, "base64").toString().split(":").slice(1).join(":")
+      : "";
+    const given = Buffer.from(password);
+    if (given.length === expected.length && crypto.timingSafeEqual(given, expected)) return next();
+    res.set("WWW-Authenticate", 'Basic realm="BioPharma Scout"').status(401).send("Password required");
+  });
+}
 
 app.use(express.json({ limit: "1mb" }));
 

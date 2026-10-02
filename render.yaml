@@ -1,0 +1,20 @@
+# Render Blueprint — deploys BioPharma Scout as one Node web service that
+# serves both the built React frontend and the /api backend.
+# In Render: New > Blueprint > pick this repo, then fill in the secrets.
+services:
+  - type: web
+    name: biopharma-scout
+    runtime: node
+    # "free" sleeps after 15 min idle (~30-50 s cold start on the next visit).
+    # Switch to "starter" ($7/mo) for always-on.
+    plan: free
+    buildCommand: npm install --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: ANTHROPIC_API_KEY
+        sync: false # entered in the Render dashboard, never committed
+      - key: APP_PASSWORD
+        sync: false # optional: leave blank for a public site
