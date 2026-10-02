@@ -207,6 +207,124 @@ function solubilityClass(logS) {
   return "Insoluble";
 }
 
+// ------------------------------------------------------- microspecies
+//
+// Each ionizable site is either in its neutral or its ionized state, so n
+// sites give 2^n microspecies. Under the independent-site approximation a
+// microspecies' fraction at a given pH is the product of each site's state
+// fraction. Species that never reach 1% anywhere on 0–14 are dropped; past
+// MAX_SPECIES the smallest are pooled into "Other".
+const MAX_SPECIES = 8;
+const MAX_ENUMERATED_SITES = 12;
+
+function siteIonizedFraction(site, pH) {
+  return site.type === "acid" ? 1 / (1 + 10 ** (site.pka - pH)) : 1 / (1 + 10 ** (pH - site.pka));
+}
+
+function speciesLabel(charge, ionized) {
+  const hasPlus = ionized.some((s) => s.type === "base");
+  const hasMinus = ionized.some((s) => s.type === "acid");
+  if (!ionized.length) return charge ? `Cation (+${charge})` : "Neutral";
+  const signed = charge > 0 ? `+${charge}` : charge < 0 ? `−${-charge}` : "0";
+  if (hasPlus && hasMinus) return `Zwitterion (net ${signed})`;
+  const names = { 1: "", 2: "Di", 3: "Tri", 4: "Tetra" };
+  const n = Math.abs(charge);
+  const prefix = names[n] ?? `${n}× `;
+  return charge > 0 ? `${prefix}${prefix ? "cation" : "Cation"} (${signed})` : `${prefix}${prefix ? "anion" : "Anion"} (${signed})`;
+}
+
+// Draws one microspecies by editing charges/H-counts in RDKit's JSON.
+// Charges are set absolutely, so input already drawn as a salt
+// (e.g. a carboxylate) still renders each state correctly.
+function speciesSvg(RDKit, baseJson, sites, ionizedMask) {
+  const json = JSON.parse(baseJson);
+  const atoms = json.molecules[0].atoms;
+  const dflt = json.defaults.atom;
+  sites.forEach((site, i) => {
+    const a = (atoms[site.atom] = { ...atoms[site.atom] });
+    const chg = a.chg ?? dflt.chg;
+    const h = a.impHs ?? dflt.impHs;
+    const neutralH = site.type === "acid" ? h + (chg < 0 ? 1 : 0) : h - (chg > 0 ? 1 : 0);
+    const ionized = (ionizedMask >> i) & 1;
+    if (site.type === "acid") {
+      a.chg = ionized ? -1 : 0;
+      a.impHs = Math.max(0, ionized ? neutralH - 1 : neutralH);
+    } else {
+      a.chg = ionized ? 1 : 0;
+      a.impHs = ionized ? neutralH + 1 : neutralH;
+    }
+  });
+  const mol = RDKit.get_mol(JSON.stringify(json));
+  if (!mol || !mol.is_valid()) {
+    mol?.delete();
+    return null;
+  }
+  try {
+    return { svg: mol.get_svg(220, 150), smiles: mol.get_smiles() };
+  } finally {
+    mol.delete();
+  }
+}
+
+export function microspeciesDistribution(RDKit, mol, sites, permanentCharge, pHs) {
+  const enumerated = sites.slice(0, MAX_ENUMERATED_SITES);
+  const n = enumerated.length;
+  const siteFractions = pHs.map((pH) => enumerated.map((s) => siteIonizedFraction(s, pH)));
+
+  let species = [];
+  for (let mask = 0; mask < 1 << n; mask++) {
+    const fractions = siteFractions.map((fs) =>
+      fs.reduce((acc, f, i) => acc * ((mask >> i) & 1 ? f : 1 - f), 1)
+    );
+    const peak = Math.max(...fractions);
+    if (peak < 0.01) continue;
+    const ionized = enumerated.filter((_, i) => (mask >> i) & 1);
+    const charge = permanentCharge + ionized.reduce((c, s) => c + (s.type === "acid" ? -1 : 1), 0);
+    species.push({
+      mask,
+      charge,
+      ionizedSites: ionized.map((s) => s.id),
+      label: speciesLabel(charge, ionized),
+      peak,
+      peakPH: pHs[fractions.indexOf(peak)],
+      fractions,
+    });
+  }
+
+  species.sort((a, b) => b.peak - a.peak);
+  let other = null;
+  if (species.length > MAX_SPECIES) {
+    const rest = species.slice(MAX_SPECIES - 1);
+    species = species.slice(0, MAX_SPECIES - 1);
+    other = {
+      key: "other",
+      label: `Other (${rest.length} minor species)`,
+      charge: null,
+      ionizedSites: [],
+      svg: null,
+      fractions: pHs.map((_, i) => rest.reduce((sum, sp) => sum + sp.fractions[i], 0)),
+    };
+  }
+  // Left-to-right in the order they dominate as pH rises, like a titration.
+  species.sort((a, b) => a.peakPH - b.peakPH || b.charge - a.charge);
+
+  const baseJson = mol.get_json();
+  const out = species.map((sp) => {
+    const drawn = speciesSvg(RDKit, baseJson, enumerated, sp.mask);
+    return {
+      key: `ms${sp.mask}`,
+      label: sp.label,
+      charge: sp.charge,
+      ionizedSites: sp.ionizedSites,
+      svg: drawn?.svg || null,
+      smiles: drawn?.smiles || null,
+      fractions: sp.fractions,
+    };
+  });
+  if (other) out.push(other);
+  return out.map((sp) => ({ ...sp, fractions: sp.fractions.map((f) => Math.round(f * 1000) / 10) }));
+}
+
 const round = (x, d = 2) => (x === null || x === undefined || Number.isNaN(x) ? null : Math.round(x * 10 ** d) / 10 ** d);
 
 // Mobile-phase pH guidance for reversed-phase LC: the analyte should be
@@ -289,6 +407,10 @@ export async function computeProperties(smilesInput) {
     );
 
     const at74 = speciesAt(7.4, sites, permanentCharge);
+    const numberedSites = sites.map((s, i) => ({ id: i + 1, ...s }));
+    const species = microspeciesDistribution(
+      RDKit, mol, numberedSites, permanentCharge, points.map((p) => p.pH)
+    );
 
     return {
       smiles: mol.get_smiles(),
@@ -321,13 +443,14 @@ export async function computeProperties(smilesInput) {
       },
       pka: {
         method: "Group-contribution rule table (approximate)",
-        sites: sites.map((s, i) => ({ id: i + 1, ...s })),
+        sites: numberedSites,
         permanentCharge,
         isoelectricPoint: isoelectricPoint(sites, permanentCharge),
       },
       lipinski: { ...lipinski, violations, passes: violations <= 1 },
       lcPhWindows: lcPhGuidance(sites),
       curve,
+      species,
     };
   } finally {
     mol.delete();

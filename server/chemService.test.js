@@ -77,3 +77,19 @@ test("SMILES input still works when PubChem is unreachable", async () => {
   assert.equal(r.found, true);
   assert.equal(r.formula, "C8H9NO2");
 });
+
+test("microspecies fractions sum to 100% and follow titration order", async () => {
+  const r = await computeProperties("NCC(=O)O"); // glycine
+  assert.deepEqual(r.species.map((s) => s.label), ["Cation (+1)", "Zwitterion (net 0)", "Anion (−1)"]);
+  r.curve.forEach((_, i) => {
+    const total = r.species.reduce((sum, sp) => sum + sp.fractions[i], 0);
+    assert.ok(Math.abs(total - 100) < 0.5, `pH ${r.curve[i].pH}: ${total}%`);
+  });
+  assert.equal(r.species[1].smiles, "[NH3+]CC(=O)[O-]");
+});
+
+test("molecules with no ionizable sites have a single neutral species", async () => {
+  const r = await computeProperties("c1ccccc1");
+  assert.equal(r.species.length, 1);
+  assert.equal(r.species[0].label, "Neutral");
+});

@@ -102,6 +102,147 @@ function PhChart({ title, data, field, unit = "", pkas, zeroLine = false }) {
   );
 }
 
+// Categorical palette (dark steps), validated against the #0f0f1e panel
+// surface: all adjacent pairs clear the CVD and normal-vision floors.
+// Slots are assigned in fixed order; the server caps species at 8.
+const SPECIES_COLORS = ["#3987e5", "#d95926", "#199e70", "#c98500", "#d55181", "#008300", "#9085e9", "#e66767"];
+
+// Microspecies distribution: % of each protonation state vs pH. Hovering a
+// legend entry (or a line) highlights that species; the crosshair readout
+// lists every species at the hovered pH.
+// Which sites differ from the neutral molecule: protonated bases, deprotonated acids.
+function describeSpecies(sp, pkas) {
+  if (sp.key === "other") return "pooled";
+  const types = Object.fromEntries(pkas.map((s) => [s.id, s.type]));
+  const prot = sp.ionizedSites.filter((id) => types[id] === "base");
+  const deprot = sp.ionizedSites.filter((id) => types[id] === "acid");
+  const parts = [];
+  if (prot.length) parts.push(`+H⁺ at ${prot.join(", ")}`);
+  if (deprot.length) parts.push(`−H⁺ at ${deprot.join(", ")}`);
+  return parts.length ? `site ${parts.join("; ")}` : "uncharged form";
+}
+
+function SpeciesChart({ species, pHs, pkas }) {
+  const [hoverPH, setHoverPH] = useState(null);
+  const [focus, setFocus] = useState(null);
+  const W = 760, H = 300, padL = 44, padR = 14, padT = 18, padB = 38;
+  const x = (pH) => padL + (pH / 14) * (W - padL - padR);
+  const y = (v) => padT + (1 - v / 100) * (H - padT - padB);
+  const colored = species.map((sp, i) => ({ ...sp, color: SPECIES_COLORS[i % SPECIES_COLORS.length] }));
+  const hoverIdx = hoverPH === null ? null : pHs.indexOf(hoverPH);
+
+  const onMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const px = ((e.clientX - rect.left) / rect.width) * W;
+    const pH = Math.max(0, Math.min(14, ((px - padL) / (W - padL - padR)) * 14));
+    setHoverPH(pHs.reduce((best, p) => (Math.abs(p - pH) < Math.abs(best - pH) ? p : best)));
+  };
+
+  const readout = hoverIdx === null ? null : [...colored].sort((a, b) => b.fractions[hoverIdx] - a.fractions[hoverIdx]);
+
+  return (
+    <div style={panel}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, marginBottom: 8, flexWrap: "wrap" }}>
+        <h4 style={{ ...sectionTitle, margin: 0 }}>Microspecies distribution</h4>
+        <span style={{ color: "#94a3b8", fontSize: 12, ...mono }}>
+          {hoverPH === null ? "hover the chart or legend" : `pH ${fmt(hoverPH, 1)}`}
+        </span>
+      </div>
+      <div style={{ position: "relative" }}>
+        <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", display: "block", cursor: "crosshair" }}
+          onMouseMove={onMove} onMouseLeave={() => setHoverPH(null)} role="img"
+          aria-label="Percentage of each ionization microspecies versus pH">
+          {[0, 25, 50, 75, 100].map((t) => (
+            <g key={t}>
+              <line x1={padL} x2={W - padR} y1={y(t)} y2={y(t)} stroke={t === 0 ? "#334155" : "#1e293b"} strokeWidth="1" />
+              <text x={padL - 8} y={y(t) + 4} fill="#64748b" fontSize="11" textAnchor="end" style={mono}>{t}%</text>
+            </g>
+          ))}
+          {[0, 2, 4, 6, 8, 10, 12, 14].map((p) => (
+            <text key={p} x={x(p)} y={H - 20} fill="#64748b" fontSize="11" textAnchor="middle" style={mono}>{p}</text>
+          ))}
+          <text x={(padL + W - padR) / 2} y={H - 4} fill="#475569" fontSize="11" textAnchor="middle" style={mono}>pH</text>
+          {pkas.filter((s) => s.pka >= 0 && s.pka <= 14).map((s) => (
+            <g key={s.id}>
+              <line x1={x(s.pka)} x2={x(s.pka)} y1={padT} y2={H - padB} stroke="#475569" strokeWidth="1" strokeDasharray="3 3" />
+              <text x={x(s.pka) + 3} y={padT - 5} fill="#94a3b8" fontSize="11" style={mono}>pKa {s.id}</text>
+            </g>
+          ))}
+          {colored.map((sp) => {
+            const d = sp.fractions.map((f, i) => `${i ? "L" : "M"}${x(pHs[i]).toFixed(1)},${y(f).toFixed(1)}`).join("");
+            const dim = focus && focus !== sp.key;
+            return (
+              <g key={sp.key} onMouseEnter={() => setFocus(sp.key)} onMouseLeave={() => setFocus(null)}>
+                {/* wide transparent stroke = a hit target bigger than the 2px line */}
+                <path d={d} fill="none" stroke="transparent" strokeWidth="14" />
+                <path d={d} fill="none" stroke={sp.color} strokeWidth={focus === sp.key ? 3.5 : 2}
+                  strokeLinejoin="round" opacity={dim ? 0.15 : 1} style={{ transition: "opacity 0.15s, stroke-width 0.15s" }}
+                  strokeDasharray={sp.key === "other" ? "5 4" : undefined} />
+              </g>
+            );
+          })}
+          {hoverIdx !== null && (
+            <g pointerEvents="none">
+              <line x1={x(hoverPH)} x2={x(hoverPH)} y1={padT} y2={H - padB} stroke="#94a3b8" strokeWidth="1" />
+              {colored.map((sp) => (
+                <circle key={sp.key} cx={x(hoverPH)} cy={y(sp.fractions[hoverIdx])} r="4" fill={sp.color}
+                  stroke="#0f0f1e" strokeWidth="2" opacity={focus && focus !== sp.key ? 0.15 : 1} />
+              ))}
+            </g>
+          )}
+        </svg>
+        {readout && (
+          <div style={{
+            position: "absolute", top: 30, pointerEvents: "none",
+            ...(hoverPH < 8 ? { right: 16 } : { left: 56 }),
+            background: "#0a0a18ee", border: "1px solid #1e293b", borderRadius: 8, padding: "8px 12px", minWidth: 180
+          }}>
+            {readout.filter((sp) => sp.fractions[hoverIdx] >= 0.1).map((sp) => (
+              <div key={sp.key} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, lineHeight: 1.7, opacity: focus && focus !== sp.key ? 0.4 : 1 }}>
+                <span style={{ width: 14, height: 2, background: sp.color, flexShrink: 0 }} />
+                <strong style={{ color: "#f1f5f9", minWidth: 46, textAlign: "right", fontVariantNumeric: "tabular-nums", ...mono }}>
+                  {fmt(sp.fractions[hoverIdx], 1)}%
+                </strong>
+                <span style={{ color: "#94a3b8" }}>{sp.label}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Legend: line key + structure + name; hover highlights the line */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(170px, 1fr))", gap: 10, marginTop: 14 }}>
+        {colored.map((sp) => (
+          <div key={sp.key} tabIndex={0}
+            onMouseEnter={() => setFocus(sp.key)} onMouseLeave={() => setFocus(null)}
+            onFocus={() => setFocus(sp.key)} onBlur={() => setFocus(null)}
+            style={{
+              border: `1px solid ${focus === sp.key ? sp.color : "#1e293b"}`, borderRadius: 10, padding: 8,
+              background: focus === sp.key ? "#12122a" : "transparent", cursor: "default", outline: "none",
+              opacity: focus && focus !== sp.key ? 0.45 : 1, transition: "opacity 0.15s, border-color 0.15s"
+            }}>
+            {sp.svg ? (
+              <div style={{ background: "#f8fafc", borderRadius: 6, marginBottom: 6 }}>
+                <img src={`data:image/svg+xml;utf8,${encodeURIComponent(sp.svg)}`} alt={sp.smiles || sp.label}
+                  style={{ width: "100%", display: "block" }} />
+              </div>
+            ) : null}
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ width: 18, height: 3, borderRadius: 2, background: sp.color, flexShrink: 0,
+                ...(sp.key === "other" ? { background: `repeating-linear-gradient(90deg, ${sp.color} 0 5px, transparent 5px 9px)` } : {}) }} />
+              <span style={{ color: "#e2e8f0", fontSize: 12, fontWeight: 600 }}>{sp.label}</span>
+            </div>
+            <div style={{ color: "#64748b", fontSize: 11, marginTop: 2, ...mono }}>
+              {describeSpecies(sp, pkas)}
+              {" · max "}{fmt(Math.max(...sp.fractions), 0)}%
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Viewer3D({ sdf }) {
   const ref = useRef(null);
   useEffect(() => {
@@ -227,6 +368,10 @@ function Results({ data }) {
           Check against the experimental values below where available.
         </p>
       </div>
+
+      {data.species?.length > 0 && (
+        <SpeciesChart species={data.species} pHs={data.curve.map((p) => p.pH)} pkas={visibleSites} />
+      )}
 
       {/* pH profiles */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
