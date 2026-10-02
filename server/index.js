@@ -7,6 +7,7 @@ import { PHENOMENEX_CONTEXT } from "./phenomenexContext.js";
 import { getNews } from "./newsService.js";
 import { getRegulatoryNews } from "./regulatorySearch.js";
 import { resolveProteinStructure } from "./proteinService.js";
+import { lookupCompound } from "./chemService.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -106,6 +107,24 @@ app.get("/api/protein-structure", async (req, res) => {
   } catch (err) {
     console.error("Protein structure lookup failed:", err.message);
     res.status(502).json({ error: "Structure lookup failed. Please try again." });
+  }
+});
+
+app.get("/api/chem-properties", async (req, res) => {
+  const query = req.query.q;
+  if (!query || typeof query !== "string" || query.length > 500) {
+    return res.status(400).json({ error: "q (a name, CAS number, or SMILES) is required" });
+  }
+
+  try {
+    const result = await lookupCompound(query);
+    if (!result.found) {
+      return res.status(404).json({ error: result.reason || `No compound found for "${query}"` });
+    }
+    res.json(result);
+  } catch (err) {
+    console.error("Chemical property lookup failed:", err.message);
+    res.status(502).json({ error: "Property calculation failed. Please try again." });
   }
 });
 

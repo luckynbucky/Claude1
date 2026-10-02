@@ -8,10 +8,12 @@
     "dev:server": "node server/index.js",
     "dev": "concurrently -k -n client,server -c blue,green \"npm:dev:client\" \"npm:dev:server\"",
     "build": "vite build",
-    "start": "node server/index.js"
+    "start": "node server/index.js",
+    "test": "node --test \"server/**/*.test.js\""
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.1",
+    "@rdkit/rdkit": "^2026.3.6",
     "3dmol": "^2.5.5",
     "dotenv": "^17.4.2",
     "express": "^4.21.1",

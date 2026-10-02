@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, Suspense, lazy } from "react";
 
 const ProteinViewer = lazy(() => import("./ProteinViewer.jsx"));
+const ChemProperties = lazy(() => import("./ChemProperties.jsx"));
 
 const PAGE_SIZE = 15;
 
@@ -461,7 +462,8 @@ export default function App() {
         <div style={{ display: "flex", gap: 4, marginBottom: 24 }}>
           {[
             { id: "feed", label: "News Feed" },
-            { id: "custom", label: "Custom Analysis" }
+            { id: "custom", label: "Custom Analysis" },
+            { id: "chem", label: "Chemical Properties" }
           ].map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
               background: activeTab === tab.id ? "#1e293b" : "transparent",
@@ -582,8 +584,14 @@ export default function App() {
           </div>
         )}
 
+        {activeTab === "chem" && (
+          <Suspense fallback={<LoadingDots />}>
+            <ChemProperties />
+          </Suspense>
+        )}
+
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          {(activeTab === "feed" ? visibleNewsItems : customNews).map(item => (
+          {activeTab !== "chem" && (activeTab === "feed" ? visibleNewsItems : customNews).map(item => (
             <NewsCard
               key={item.id}
               item={item}
